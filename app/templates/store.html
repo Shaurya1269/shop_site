@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ shop.shop_name }}</h1>
+
+<h3>Products</h3>
+
+{% if products %}
+    {% for product in products %}
+     <div style="border:1px solid black; padding:10px; margin:10px">
+        <h4>{{ product.name }}</h4>
+        <p>{{ product.description }}</p>
+        <b>₹{{ product.price }}</b>
+     </div>
+     {% endfor %}
+{% else %}
+     <p>No products found</p>
+{% endif %}
+
+{% endblock %}
