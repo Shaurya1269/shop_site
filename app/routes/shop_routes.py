@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, session, redirect, request
 from app.models.shop_model import create_shop
 from app.models.product_model import create_product
 from app.utils.db import get_db
-from app.utils.decorator import login_required
+from app.utils.decorators import login_required
 
 shop_bp = Blueprint('shop', __name__)
 
