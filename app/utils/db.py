@@ -1,7 +1,8 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import sqlite3
 from app.config import DATABASE_URL
 
+
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    conn = sqlite3.connect(DATABASE_URL.replace('sqlite:///', ''))
+    conn.row_factory = sqlite3.Row  # To make rows behave like dicts
     return conn

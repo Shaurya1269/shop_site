@@ -1,49 +1,48 @@
-create table users(
-    id serial primary key,
-    name varchar(100) not null,
-    email varchar(100) not null unique,
-    password_hash text not null,
-    created_at timestamp default current_timestamp
+CREATE TABLE users(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-create table shops(
-    id serial primary key,
-    user_id integer not null,
-    shop_name varchar(100) not null,
-    slug varchar(150) unique not null,
-    created_at timestamp default current_timestamp,
-    foreign key (user_id) references users(id) on delete cascade
+CREATE TABLE shops(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    shop_name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-create table products(
-    id serial primary key,
-    shop_id integer not null,
-    name varchar(200) not null,
-    description text,
-    price numeric(10, 2) not null,
-    stock integer default 0,
-    image_url text,
-    created_at timestamp default current_timestamp,
-    foreign key (shop_id) references shops(id) on delete cascade
+CREATE TABLE products(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shop_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    price REAL NOT NULL,
+    stock INTEGER DEFAULT 0,
+    image_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
 );
 
-create table orders(
-    id serial primary key,
-    shop_id integer not null,
-    customer_name varchar(100) not null,
-    phone varchar(20) not null,
-    address text not null,
-    created_at timestamp default current_timestamp,
-    foreign key (shop_id) references shops(id) on delete cascade
+CREATE TABLE orders(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shop_id INTEGER NOT NULL,
+    customer_name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
 );
 
-
-create table order_items(
-    id serial primary key,
-    order_id integer not null,
-    product_id integer not null,
-    quantity integer not null,
-    price numeric(10, 2) not null,
-    foreign key (order_id) references orders(id) on delete cascade,
-    foreign key (product_id) references products(id) on delete cascade
-)
+CREATE TABLE order_items(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    price REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);

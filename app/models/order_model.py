@@ -10,16 +10,15 @@ def create_order(user_id, shop_id, customer_name, phone, address):
 
     cur.execute("""
         INSERT INTO orders (shop_id, customer_name, phone, address, created_at)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING id, shop_id, customer_name, phone, address, created_at
+        VALUES (?, ?, ?, ?, ?)
     """, (shop_id, customer_name, phone, address, datetime.now()))
 
-    order = cur.fetchone()
+    order_id = cur.lastrowid
     conn.commit()
     cur.close()
     conn.close()
 
-    return order
+    return {'id': order_id, 'shop_id': shop_id, 'customer_name': customer_name, 'phone': phone, 'address': address, 'created_at': datetime.now()}
 
 
 def validate_cart_single_shop(user_id):
@@ -31,7 +30,7 @@ def validate_cart_single_shop(user_id):
         SELECT DISTINCT products.shop_id
         FROM cart
         JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
+        WHERE cart.user_id = ?
     """, (user_id,))
 
     shops = cur.fetchall()
@@ -53,13 +52,12 @@ def add_order_item(order_id, product_id, quantity, price):
 
     cur.execute("""
         INSERT INTO order_items (order_id, product_id, quantity, price)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id, order_id, product_id, quantity, price
+        VALUES (?, ?, ?, ?)
     """, (order_id, product_id, quantity, price))
 
-    item = cur.fetchone()
+    item_id = cur.lastrowid
     conn.commit()
     cur.close()
     conn.close()
 
-    return item
+    return {'id': item_id, 'order_id': order_id, 'product_id': product_id, 'quantity': quantity, 'price': price}

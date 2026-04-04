@@ -5,4 +5,4 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:password@localhost:5432/shop_platform")
+    "DATABASE_URL", "sqlite:///shop.db")
