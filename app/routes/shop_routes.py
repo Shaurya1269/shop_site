@@ -47,7 +47,7 @@ def public_store(slug):
     cur = conn.cursor()
 
     # Get shop
-    cur.execute("SELECT * FROM shops WHERE slug = %s", (slug,))
+    cur.execute("SELECT * FROM shops WHERE slug = ?", (slug,))
     shop = cur.fetchone()
 
     if not shop:
@@ -56,7 +56,7 @@ def public_store(slug):
         return "Shop not found", 404
 
     # Get products for this shop
-    cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
+    cur.execute("SELECT * FROM products WHERE shop_id = ?", (shop['id'],))
     products = cur.fetchall()
 
     cur.close()
@@ -78,7 +78,7 @@ def add_product():
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute("SELECT id FROM shops WHERE user_id = %s",
+        cur.execute("SELECT id FROM shops WHERE user_id = ?",
                     (session["user_id"],))
         shop = cur.fetchone()
         cur.close()
@@ -108,7 +108,7 @@ def add_to_cart():
     SELECT products.shop_id
     FROM cart
     JOIN products ON cart.product_id = products.id
-    WHERE cart.user_id = %s
+    WHERE cart.user_id = ?
     LIMIT 1
 """, (session["user_id"],))
 
@@ -116,7 +116,7 @@ def add_to_cart():
 
 # get new product shop
     cur.execute(
-        "SELECT shop_id FROM products WHERE id = %s",
+        "SELECT shop_id FROM products WHERE id = ?",
         (product_id,)
     )
     new_product = cur.fetchone()
@@ -138,7 +138,7 @@ def view_cart():
                (products.price * cart.quantity) as total
         FROM cart
         JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
+        WHERE cart.user_id = ?
     """, (session["user_id"],))
 
     items = cur.fetchall()
@@ -163,7 +163,7 @@ def checkout_page():
                (products.price * cart.quantity) as total
         FROM cart
         JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
+        WHERE cart.user_id = ?
     """, (session["user_id"],))
 
     items = cur.fetchall()
@@ -208,7 +208,7 @@ def checkout():
         SELECT cart.id, products.id as product_id, products.price, cart.quantity
         FROM cart
         JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
+        WHERE cart.user_id = ?
     """, (session["user_id"],))
 
     cart_items = cur.fetchall()
@@ -228,7 +228,7 @@ def checkout():
                        item['quantity'], item['price'])
 
     # Clear cart
-    cur.execute("DELETE FROM cart WHERE user_id = %s", (session["user_id"],))
+    cur.execute("DELETE FROM cart WHERE user_id = ?", (session["user_id"],))
     conn.commit()
     cur.close()
     conn.close()
@@ -251,7 +251,7 @@ def orders():
             SELECT DISTINCT order_id FROM order_items
             WHERE product_id IN (
                 SELECT id FROM products WHERE shop_id IN (
-                    SELECT id FROM shops WHERE user_id = %s
+                    SELECT id FROM shops WHERE user_id = ?
                 )
             )
         )
@@ -267,7 +267,7 @@ def orders():
             SELECT order_items.*, products.name as product_name
             FROM order_items
             JOIN products ON order_items.product_id = products.id
-            WHERE order_items.order_id = %s
+            WHERE order_items.order_id = ?
         """, (order['id'],))
 
         items = cur.fetchall()
