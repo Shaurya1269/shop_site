@@ -19,7 +19,9 @@ def create_app():
     
     @app.route("/init-db")
     def init_db():
-        from app.models import User
+        import app.models.user_model
+        import app.models.product_model
+        import app.models.shop_model
         db.create_all()
         return "Database intialized!!"
     
