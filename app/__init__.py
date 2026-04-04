@@ -1,4 +1,5 @@
 from flask import Flask
+from app.extensions import db
 
 
 def create_app():
@@ -9,9 +10,19 @@ def create_app():
     from dotenv import load_dotenv
     load_dotenv()
     app.secret_key = os.getenv('SECRET_KEY', 'fallback_secret_key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+        'DATABASE_URL', 'sqlite:///shop.db')
 
     # db init
-
+    db.init_app(app)
+    
+    
+    @app.route("/init-db")
+    def init_db():
+        from app.models import User
+        db.create_all()
+        return "Database intialized!!"
+    
     # blueprint registration
     from app.routes.shop_routes import shop_bp
     from app.routes.auth_routes import auth_bp
