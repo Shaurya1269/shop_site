@@ -3,6 +3,7 @@ from app.models.shop_model import create_shop
 from app.models.product_model import create_product
 from app.utils.db import get_db, get_cursor
 from app.utils.decorators import login_required
+import os
 
 shop_bp = Blueprint('shop', __name__)
 
@@ -10,6 +11,40 @@ shop_bp = Blueprint('shop', __name__)
 @shop_bp.route("/")
 def home():
     return render_template("index.html")
+
+
+@shop_bp.route("/health")
+def health():
+    """Diagnostic route to test database connection."""
+    try:
+        conn = get_db()
+        cur = get_cursor(conn)
+        cur.execute("SELECT 1")
+        cur.close()
+
+        # Check if tables exist
+        cur = get_cursor(conn)
+        cur.execute("""
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public'
+            ORDER BY table_name
+        """)
+        tables = [row['table_name'] for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+
+        return {
+            "status": "ok",
+            "database": "connected",
+            "tables": tables,
+            "DATABASE_URL_set": bool(os.getenv("DATABASE_URL"))
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "DATABASE_URL_set": bool(os.getenv("DATABASE_URL"))
+        }, 500
 
 
 @shop_bp.route('/login')
