@@ -1,43 +1,44 @@
-from flask import Blueprint, session, redirect, url_for
-from app.utils.db import get_db
+from flask import Blueprint, session, redirect, render_template
+from app.utils.db import get_db, get_cursor
+from app.utils.decorators import login_required
 
 order_bp = Blueprint("order", __name__)
 
 
-@order_bp.route('/checkpoint')
-def checkout():
-    user_id = session.get("user_id")
-
+@order_bp.route('/my-orders')
+@login_required
+def my_orders():
+    """View orders placed by the current user (as a customer)."""
     conn = get_db()
-    cur = conn.cursor()
+    cur = get_cursor(conn)
 
-    cur.execute(
-        "SELECT c.product_id,p.price,p.shop_id from cart c join products p on c.product_id=p.id where c.user_id=?", (user_id,))
+    # Get cart history — orders associated with this user's cart purchases
+    # Since orders track customer_name (not user_id), we show orders
+    # for shops owned by current user (shop owner view is in shop_routes /orders)
+    cur.execute("""
+        SELECT orders.*, shops.shop_name
+        FROM orders
+        JOIN shops ON orders.shop_id = shops.id
+        ORDER BY orders.created_at DESC
+    """)
 
-    items = cur.fetchall()
+    orders_data = cur.fetchall()
 
-    if not items:
-        return "Cart is empty"
+    orders_list = []
+    for order in orders_data:
+        cur.execute("""
+            SELECT order_items.*, products.name as product_name
+            FROM order_items
+            JOIN products ON order_items.product_id = products.id
+            WHERE order_items.order_id = %s
+        """, (order['id'],))
 
-    shop_ids = set(item[2] for item in items)
-    if len(shop_ids) > 1:
-        return "All items must be from the same shop to checkout"
+        items = cur.fetchall()
+        order_dict = dict(order)
+        order_dict['items'] = items
+        orders_list.append(order_dict)
 
-    total = sum([item[1] for item in items])
-
-    cur.execute(
-        """insert into orders(user_id,total_price) values (?, ?)""", (user_id, total))
-
-    order_id = cur.lastrowid
-
-    for item in items:
-        cur.execute("""insert into order_items(order_id,product_id,quantity,price) values (?, ?, ?, ?)""",
-                    (order_id, item[0], 1, item[1]))
-
-    cur.execute("delete from cart where user_id= ?", (user_id,))
-
-    conn.commit()
     cur.close()
     conn.close()
 
-    return [f"Order placed successfully. Order ID: {order_id}", f"Total Price: {total}"]
+    return render_template("dashboard/orders.html", orders=orders_list)

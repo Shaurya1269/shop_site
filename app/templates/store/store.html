@@ -11,16 +11,16 @@
 <div style="border:1px solid black; padding:10px; margin:10px">
     <h4>{{ product.name }}</h4>
     <p>{{ product.description }}</p>
-    <b>₹{{ product.price }}</b>
+    <b>₹{{ "%.2f"|format(product.price) }}</b>
+
+    <form action="/add-to-cart" method="POST" style="margin-top: 8px;">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <button type="submit">Add to Cart</button>
+    </form>
 </div>
 {% endfor %}
 {% else %}
 <p>No products found</p>
 {% endif %}
-
-<form action="/add-to-cart" method="POST">
-    <input type="hidden" name="product_id" value="{{product.id}}">
-    <button>Add to cart</button>
-</form>
 
 {% endblock %}

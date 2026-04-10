@@ -1,30 +1,34 @@
-from app.utils.db import get_db
+from app.utils.db import get_db, get_cursor
 
 
 def create_user(name, email, password_hash):
+    """Create a new user and return their details."""
     conn = get_db()
-    cur = conn.cursor()   # Create a cursor object to execute SQL queries
+    cur = get_cursor(conn)
 
     cur.execute("""
         INSERT INTO users (name, email, password_hash)
-        VALUES (?, ?, ?)
-    """, (name, email, password_hash))     # Execute the SQL query to insert a new user
+        VALUES (%s, %s, %s)
+        RETURNING id
+    """, (name, email, password_hash))
 
-    user_id = cur.lastrowid
-    conn.commit()  # Commit the transaction to save changes to the database
-    cur.close()   # Close the cursor
-    conn.close()  # Close the database connection
+    user_id = cur.fetchone()['id']
+    conn.commit()
+    cur.close()
+    conn.close()
 
     return {'id': user_id, 'name': name, 'email': email}
 
 
 def get_user_by_email(email):
+    """Retrieve a user by their email address. Returns a dict or None."""
     conn = get_db()
-    cur = conn.cursor()   # Create a cursor object to execute SQL queries
+    cur = get_cursor(conn)
 
-    cur.execute("""SELECT id, name, email, password_hash
+    cur.execute("""
+        SELECT id, name, email, password_hash
         FROM users
-        WHERE email = ?
+        WHERE email = %s
     """, (email,))
 
     user = cur.fetchone()

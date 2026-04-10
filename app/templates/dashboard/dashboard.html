@@ -1,12 +1,33 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Shop Platform{% endblock %}
+
+{% block content %}
 
 <h2>Dashboard</h2>
-<p>Welcome. Your shop control panel will appear here.</p>
 
-<a href="/create-shop">Create Shop</a>
-<br /><br />
-<a href="/add-product">Add Product</a>
-<br /><br />
-<a href="/orders">View Orders</a>
+{% if shop %}
+    <h3>Your Shop: {{ shop.shop_name }}</h3>
+    <p>Public URL: <a href="/shop/{{ shop.slug }}">/shop/{{ shop.slug }}</a></p>
+
+    <a href="/add-product">Add Product</a> |
+    <a href="/orders">View Orders</a>
+
+    {% if products %}
+        <h4>Your Products ({{ products|length }})</h4>
+        {% for product in products %}
+        <div style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:5px;">
+            <strong>{{ product.name }}</strong> — ₹{{ "%.2f"|format(product.price) }}
+            <p>{{ product.description }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No products yet. <a href="/add-product">Add your first product</a></p>
+    {% endif %}
+
+{% else %}
+    <p>You don't have a shop yet.</p>
+    <a href="/create-shop">Create Shop</a>
+{% endif %}
 
 {% endblock %}

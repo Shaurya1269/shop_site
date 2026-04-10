@@ -11,11 +11,12 @@ def register():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    existing = get_user_by_email(email)
     if not name or not email or not password:
         return "All fields required", 400
+
+    existing = get_user_by_email(email)
     if existing:
-        return "User already exists"
+        return "User already exists", 409
 
     password_hash = hash_password(password)
     # Create a new user in the database with the provided name, email, and hashed password

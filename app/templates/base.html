@@ -1,12 +1,24 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop Platform</title>
+    <title>{% block title %}Shop Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>MY SHOP PLATFORM</h1>
+    <nav>
+        <a href="/">Home</a>
+        {% if session.get('user_id') %}
+            | <a href="/dashboard">Dashboard</a>
+            | <a href="/cart">Cart</a>
+            | <a href="/orders">Orders</a>
+            | <a href="/auth/logout">Logout</a>
+        {% else %}
+            | <a href="/login">Login</a>
+            | <a href="/register">Register</a>
+        {% endif %}
+    </nav>
     <hr>
     {% block content %}
     {% endblock %}

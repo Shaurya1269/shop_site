@@ -1,21 +1,41 @@
-import psycopg2
+"""Create database tables on the Render PostgreSQL instance.
+
+Usage:
+    python database/create_tables.py
+
+Requires DATABASE_URL to be set in the .env file.
+"""
 import os
+import sys
+import psycopg2
+from dotenv import load_dotenv
 
-# Path to the database
-db_path = os.path.join(os.path.dirname(__file__), '..', 'shop.db')
+load_dotenv()
 
-# Connect to SQLite database
-conn = psycopg2.connect(os.getenv("postgresql://shaurya:WO9M0uxXeskbGy3Lm8RmgbrPNMycN749@dpg-d74e8h450q8c73duv8ig-a.oregon-postgres.render.com/shopplatform123"))
-cur = conn.cursor()
+url = os.getenv("DATABASE_URL")
 
-# Read and execute the schema
-with open('schema.sql', 'r') as f:
+if not url:
+    print("ERROR: DATABASE_URL is not set in .env file.")
+    sys.exit(1)
+
+# Render provides postgres:// but psycopg2 v2.9+ requires postgresql://
+if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql://", 1)
+
+# Read the schema file
+schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
+
+with open(schema_path, 'r') as f:
     schema = f.read()
 
-cur.executescript(schema)
-
-conn.commit()
-cur.close()
-conn.close()
-
-print("Database tables created successfully!")
+try:
+    conn = psycopg2.connect(url)
+    cur = conn.cursor()
+    cur.execute(schema)
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("Database tables created successfully!")
+except psycopg2.Error as e:
+    print(f"Database error: {e}")
+    sys.exit(1)
