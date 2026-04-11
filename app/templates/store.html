@@ -12,6 +12,10 @@
         <h4>{{ product.name }}</h4>
         <p>{{ product.description }}</p>
         <b>₹{{ product.price }}</b>
+
+          <form action="/add-to-cart/{{ product.id }}" method="POST">
+               <button type="submit">Add to Cart</button>
+          </form>
      </div>
      {% endfor %}
 {% else %}

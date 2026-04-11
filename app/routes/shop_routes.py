@@ -93,58 +93,59 @@ def create_shop_page():
 
 
 @shop_bp.route("/shop/<slug>")
-def public_store(slug):
-    conn = get_db()
-    cur = get_cursor(conn)
-
-    # Get shop
-    cur.execute("SELECT * FROM shops WHERE slug = %s", (slug,))
-    shop = cur.fetchone()
-
+def view_store(slug):
+    from app.utils.db import get_db
+    from flask import render_template
+    conn=get_db()
+    cur=conn.cursor()
+    
+    #get shop using slug
+    cur.execute("Select id,name from products where slug=%s",(slug,))
+    shop=cur.fetchone()
+    
     if not shop:
-        cur.close()
-        conn.close()
-        return "Shop not found", 404
-
-    # Get products for this shop
-    cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
-    products = cur.fetchall()
-
+        return "Shop not found"
+    shop_id=shop[0]
+    
+    #get products of this shop
+    cur.execute("Select name,price,desctription from products where shop_id=%s",(shop_id,))
+    products=cur.fetchall()
+    
     cur.close()
     conn.close()
-
-    return render_template("store/store.html", shop=shop, products=products)
-
+    return render_template("store.html",shop=shop,products=products)
+    
 
 @shop_bp.route("/add-product", methods=["GET", "POST"])
 @login_required
 def add_product():
-    if request.method == "POST":
-        name = request.form.get("name")
-        price = request.form.get("price")
-        description = request.form.get("description")
-
-        if not name or not price:
-            return "Name and price are required", 400
-
-        conn = get_db()
-        cur = get_cursor(conn)
-
-        cur.execute("SELECT id FROM shops WHERE user_id = %s",
-                    (session["user_id"],))
-        shop = cur.fetchone()
+    from flask import request,session,redirect,render_template
+    from app.utils.db import get_db
+    user_id=session.get("user_id")
+    if not user_id:
+        return redirect("/login")
+    
+    conn=get_db()
+    cur=conn.cursor()
+    cur.execute("SELECT id FROM shops WHERE user_id=%s",(user_id,))
+    shop=cur.fetchone()
+    
+    if not shop:
+        return "Create a shop First"
+    shop_id=shop[0]
+    if request.method=='POST':
+        name=request.form.get("name")
+        price=request.form.get('price')
+        description=request.form.get('description')
+        
+        cur.execute("""insert into products(shop_id,name,price,description) values(%s, %s, %s, %s)""",(shop_id,name,price,description))
+        
+        conn.commit()
         cur.close()
         conn.close()
-
-        if not shop:
-            return "No shop found. Please create a shop first.", 400
-
-        create_product(shop['id'], name, price, description)
-        return redirect('/dashboard')
-
-    return render_template("dashboard/add_product.html")
-
-
+        return redirect("/dashboard")  
+    return render_template("add_product.html")  
+    
 @shop_bp.route("/add-to-cart", methods=["POST"])
 def add_to_cart():
     if "user_id" not in session:
