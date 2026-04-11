@@ -1,18 +1,79 @@
 {% extends "base.html" %}
 
+{% block title %}Shop Platform - Home{% endblock %}
+
 {% block content %}
 
 <h2>Welcome to My Shop Platform</h2>
 
-<p>This is the homepage.</p>
+<p>Browse shops and discover great products!</p>
 
-<a href="/register">Create your shop</a>
-<br><br>
-<a href="/login">Login</a>
+{% if session.get('user_id') %}
+    <a href="/dashboard">Go to Dashboard</a> |
+    <a href="/cart">View Cart</a>
+{% else %}
+    <a href="/register">Create your shop</a> |
+    <a href="/login">Login</a>
+{% endif %}
 
-<br><br>
+<hr>
 
-<!-- <h1>Welcome</h1>
-<a href="/create_shop">Create your shop</a> -->
+<h3>Available Shops</h3>
+
+{% if shops %}
+<div class="shops-grid">
+    {% for shop in shops %}
+    <div class="shop-card">
+        <h4><a href="/shop/{{ shop.slug }}">{{ shop.shop_name }}</a></h4>
+        <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No shops available yet. <a href="/register">Be the first to create one!</a></p>
+{% endif %}
+
+<style>
+  .shops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  .shop-card {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .shop-card h4 {
+    margin: 0 0 10px 0;
+  }
+
+  .shop-card a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .shop-card a:hover {
+    text-decoration: underline;
+  }
+
+  .visit-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background-color: #007bff;
+    color: white !important;
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 14px;
+  }
+
+  .visit-btn:hover {
+    background-color: #0056b3;
+  }
+</style>
 
 {% endblock %}

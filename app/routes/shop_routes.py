@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, request
+from flask import Blueprint, render_template, session, redirect, request, flash
 from app.models.shop_model import create_shop
 from app.models.product_model import create_product
 from app.utils.db import get_db, get_cursor
@@ -10,7 +10,15 @@ shop_bp = Blueprint('shop', __name__)
 
 @shop_bp.route("/")
 def home():
-    return render_template("index.html")
+    conn=get_db()
+    cur=conn.cursor()
+    
+    cur.execute("select shop_name,slug from shops")
+    shops=cur.fetchall()
+    
+    cur.close()
+    conn.close()
+    return render_template("home.html", shops=shops)
 
 
 @shop_bp.route("/health")
@@ -94,73 +102,105 @@ def create_shop_page():
 
 @shop_bp.route("/shop/<slug>")
 def view_store(slug):
-    from app.utils.db import get_db
-    from flask import render_template
-    conn=get_db()
-    cur=conn.cursor()
-    
-    #get shop using slug
-    cur.execute("Select id,name from products where slug=%s",(slug,))
-    shop=cur.fetchone()
-    
+    """Public store page — anyone can view a shop by its slug."""
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    # Get shop by slug from the shops table
+    cur.execute("SELECT id, shop_name, slug FROM shops WHERE slug = %s", (slug,))
+    shop = cur.fetchone()
+
     if not shop:
-        return "Shop not found"
-    shop_id=shop[0]
-    
-    #get products of this shop
-    cur.execute("Select name,price,desctription from products where shop_id=%s",(shop_id,))
-    products=cur.fetchall()
-    
+        cur.close()
+        conn.close()
+        return "Shop not found", 404
+
+    # Get products for this shop
+    cur.execute(
+        "SELECT id, name, price, description FROM products WHERE shop_id = %s",
+        (shop['id'],)
+    )
+    products = cur.fetchall()
+
     cur.close()
     conn.close()
-    return render_template("store.html",shop=shop,products=products)
-    
+    return render_template("store/store.html", shop=shop, products=products)
+
 
 @shop_bp.route("/add-product", methods=["GET", "POST"])
 @login_required
 def add_product():
-    from flask import request,session,redirect,render_template
-    from app.utils.db import get_db
-    user_id=session.get("user_id")
-    if not user_id:
-        return redirect("/login")
-    
-    conn=get_db()
-    cur=conn.cursor()
-    cur.execute("SELECT id FROM shops WHERE user_id=%s",(user_id,))
-    shop=cur.fetchone()
-    
+    user_id = session.get("user_id")
+
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("SELECT id FROM shops WHERE user_id = %s", (user_id,))
+    shop = cur.fetchone()
+
     if not shop:
-        return "Create a shop First"
-    shop_id=shop[0]
-    if request.method=='POST':
-        name=request.form.get("name")
-        price=request.form.get('price')
-        description=request.form.get('description')
-        
-        cur.execute("""insert into products(shop_id,name,price,description) values(%s, %s, %s, %s)""",(shop_id,name,price,description))
-        
+        cur.close()
+        conn.close()
+        return "Create a shop first", 400
+
+    shop_id = shop['id']
+
+    if request.method == 'POST':
+        name = request.form.get("name")
+        price = request.form.get('price')
+        description = request.form.get('description')
+
+        if not name or not price:
+            cur.close()
+            conn.close()
+            return "Name and price are required", 400
+
+        try:
+            price = float(price)
+        except ValueError:
+            cur.close()
+            conn.close()
+            return "Price must be a number", 400
+
+        cur.execute(
+            """INSERT INTO products (shop_id, name, price, description)
+               VALUES (%s, %s, %s, %s)""",
+            (shop_id, name, price, description)
+        )
         conn.commit()
         cur.close()
         conn.close()
-        return redirect("/dashboard")  
-    return render_template("add_product.html")  
-    
+        return redirect("/dashboard")
+
+    cur.close()
+    conn.close()
+    return render_template("dashboard/add_product.html")
+
+
 @shop_bp.route("/add-to-cart", methods=["POST"])
-def add_to_cart():
+@shop_bp.route("/add-to-cart/<int:product_id>", methods=["POST"])
+def add_to_cart(product_id=None):
+    """Add a product to the user's cart. Accepts product_id from form data or URL."""
     if "user_id" not in session:
         return redirect("/login")
 
-    product_id = request.form.get("product_id")
+    # Accept product_id from URL path or form body
+    if product_id is None:
+        product_id = request.form.get("product_id")
 
     if not product_id:
         return "Product ID is required", 400
 
+    # Convert to int for safety
+    try:
+        product_id = int(product_id)
+    except (ValueError, TypeError):
+        return "Invalid product ID", 400
+
     conn = get_db()
     cur = get_cursor(conn)
 
-    # Get the new product's shop
-    cur.execute("SELECT shop_id FROM products WHERE id = %s", (product_id,))
+    # Verify the product exists and get its shop
+    cur.execute("SELECT id, shop_id FROM products WHERE id = %s", (product_id,))
     new_product = cur.fetchone()
 
     if not new_product:
@@ -207,6 +247,56 @@ def add_to_cart():
     return redirect(request.referrer or "/")
 
 
+@shop_bp.route("/update-cart", methods=["POST"])
+@login_required
+def update_cart():
+    """Update quantity of a cart item or remove it."""
+    cart_id = request.form.get("cart_id")
+    action = request.form.get("action")  # "increase", "decrease", or "remove"
+
+    if not cart_id or not action:
+        return "Missing parameters", 400
+
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    # Verify cart item belongs to user
+    cur.execute("SELECT id, quantity FROM cart WHERE id = %s AND user_id = %s",
+                (cart_id, session["user_id"]))
+    item = cur.fetchone()
+
+    if not item:
+        cur.close()
+        conn.close()
+        return "Cart item not found", 404
+
+    if action == "remove" or (action == "decrease" and item["quantity"] <= 1):
+        cur.execute("DELETE FROM cart WHERE id = %s", (cart_id,))
+    elif action == "decrease":
+        cur.execute("UPDATE cart SET quantity = quantity - 1 WHERE id = %s", (cart_id,))
+    elif action == "increase":
+        cur.execute("UPDATE cart SET quantity = quantity + 1 WHERE id = %s", (cart_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/cart")
+
+
+@shop_bp.route("/clear-cart", methods=["POST"])
+@login_required
+def clear_cart():
+    """Remove all items from the user's cart."""
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("DELETE FROM cart WHERE user_id = %s", (session["user_id"],))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect("/cart")
+
+
 @shop_bp.route("/cart")
 def view_cart():
     if "user_id" not in session:
@@ -216,7 +306,7 @@ def view_cart():
     cur = get_cursor(conn)
 
     cur.execute("""
-        SELECT products.name, products.price, cart.quantity,
+        SELECT cart.id as cart_id, products.name, products.price, cart.quantity,
                (products.price * cart.quantity) as total
         FROM cart
         JOIN products ON cart.product_id = products.id
@@ -354,3 +444,4 @@ def orders():
     conn.close()
 
     return render_template("dashboard/orders.html", orders=orders_list)
+

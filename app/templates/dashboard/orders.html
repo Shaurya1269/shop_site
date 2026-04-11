@@ -17,7 +17,7 @@
         <h4>Order Items:</h4>
         <ul>
         {% for item in order.items %}
-            <li>{{ item.product_name }} - Quantity: {{ item.quantity }} - Price: ${{ "%.2f"|format(item.price) }}</li>
+            <li>{{ item.product_name }} - Quantity: {{ item.quantity }} - Price: ₹{{ "%.2f"|format(item.price) }}</li>
         {% endfor %}
         </ul>
     </div>

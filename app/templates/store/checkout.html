@@ -27,14 +27,14 @@
     <div class="cart-item">
       <span>{{ item.name }}</span>
       <span>Quantity: {{ item.quantity }}</span>
-      <span>Price: ${{ "%.2f"|format(item.price) }}</span>
-      <span>Total: ${{ "%.2f"|format(item.price * item.quantity) }}</span>
+      <span>Price: ₹{{ "%.2f"|format(item.price) }}</span>
+      <span>Total: ₹{{ "%.2f"|format(item.total) }}</span>
     </div>
     {% endfor %}
   </div>
 
   <div class="total">
-    <strong>Grand Total: ${{ "%.2f"|format(total) }}</strong>
+    <strong>Grand Total: ₹{{ "%.2f"|format(total) }}</strong>
   </div>
 
   <button type="submit" class="btn btn-primary">Place Order</button>

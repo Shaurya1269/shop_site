@@ -1,33 +1,135 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+
+{% block title %}Your Cart - Shop Platform{% endblock %}
+
+{% block content %}
 
 <h2>Your Cart</h2>
 
-{% if items %} {% for item in items %}
-<p>
-  {{ item.name }} - ${{ "%.2f"|format(item.price) }} x {{ item.quantity }} = ${{
-  "%.2f"|format(item.total) }}
-</p>
-{% endfor %}
+{% if items %}
+<table class="cart-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Price</th>
+      <th>Quantity</th>
+      <th>Total</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.name }}</td>
+      <td>₹{{ "%.2f"|format(item.price) }}</td>
+      <td>
+        <div class="quantity-controls">
+          <form action="/update-cart" method="POST" style="display:inline;">
+            <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+            <input type="hidden" name="action" value="decrease">
+            <button type="submit" class="qty-btn">−</button>
+          </form>
+          <span class="qty-value">{{ item.quantity }}</span>
+          <form action="/update-cart" method="POST" style="display:inline;">
+            <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+            <input type="hidden" name="action" value="increase">
+            <button type="submit" class="qty-btn">+</button>
+          </form>
+        </div>
+      </td>
+      <td>₹{{ "%.2f"|format(item.total) }}</td>
+      <td>
+        <form action="/update-cart" method="POST" style="display:inline;">
+          <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+          <input type="hidden" name="action" value="remove">
+          <button type="submit" class="remove-btn">Remove</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 <div class="cart-total">
-  <h3>Grand Total: ${{ "%.2f"|format(total) }}</h3>
+  <h3>Grand Total: ₹{{ "%.2f"|format(total) }}</h3>
 </div>
 
 <div class="cart-actions">
   <a href="/checkout-page" class="btn btn-primary">Proceed to Checkout</a>
   <a href="/" class="btn btn-secondary">Continue Shopping</a>
+  <form action="/clear-cart" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-danger">Clear Cart</button>
+  </form>
 </div>
+
 {% else %}
 <p>Your cart is empty.</p>
-<a href="/">Start Shopping</a>
+<a href="/" class="btn btn-secondary">Start Shopping</a>
 {% endif %}
-
-<form action="/checkout" method="POST">
-  <button type="submit">Checkout</button>
-</form>
 
 
 <style>
+  .cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .cart-table th,
+  .cart-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .cart-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qty-btn:hover {
+    background-color: #e2e6ea;
+  }
+
+  .qty-value {
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .remove-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .remove-btn:hover {
+    background-color: #c82333;
+  }
+
   .cart-total {
     text-align: right;
     margin: 20px 0;
@@ -39,6 +141,10 @@
   .cart-actions {
     margin-top: 30px;
     text-align: center;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
   }
 
   .btn {
@@ -46,7 +152,9 @@
     text-decoration: none;
     border-radius: 4px;
     display: inline-block;
-    margin: 0 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
   }
 
   .btn-primary {
@@ -65,6 +173,15 @@
 
   .btn-secondary:hover {
     background-color: #545b62;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
   }
 </style>
 

@@ -1,4 +1,8 @@
+{# This file is deprecated. The store template has moved to store/store.html #}
+{# This file exists only as a fallback — the route uses store/store.html directly #}
 {% extends "base.html" %}
+
+{% block title %}{{ shop.shop_name }} - Shop Platform{% endblock %}
 
 {% block content %}
 
@@ -7,19 +11,20 @@
 <h3>Products</h3>
 
 {% if products %}
-    {% for product in products %}
-     <div style="border:1px solid black; padding:10px; margin:10px">
-        <h4>{{ product.name }}</h4>
-        <p>{{ product.description }}</p>
-        <b>₹{{ product.price }}</b>
+{% for product in products %}
+<div style="border:1px solid #ddd; padding:15px; margin:10px; border-radius:8px;">
+    <h4>{{ product.name }}</h4>
+    <p>{{ product.description or 'No description' }}</p>
+    <b>₹{{ "%.2f"|format(product.price) }}</b>
 
-          <form action="/add-to-cart/{{ product.id }}" method="POST">
-               <button type="submit">Add to Cart</button>
-          </form>
-     </div>
-     {% endfor %}
+    <form action="/add-to-cart" method="POST" style="margin-top: 8px;">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <button type="submit">Add to Cart</button>
+    </form>
+</div>
+{% endfor %}
 {% else %}
-     <p>No products found</p>
+<p>No products found</p>
 {% endif %}
 
 {% endblock %}
