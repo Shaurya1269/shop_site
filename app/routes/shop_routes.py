@@ -22,6 +22,43 @@ def home():
     return render_template("index.html", shops=shops)
 
 
+@shop_bp.route("/search")
+def search():
+    query = request.args.get("q", "").strip()
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    shops = []
+    products = []
+
+    if query:
+        cur.execute("""
+            SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
+        """, (f"%{query}%",))
+        shops = cur.fetchall()
+
+        cur.execute("""
+            SELECT products.name,
+                   products.price,
+                   shops.shop_name,
+                   shops.slug
+            FROM products
+            JOIN shops ON products.shop_id = shops.id
+            WHERE products.name ILIKE %s
+        """, (f"%{query}%",))
+        products = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "search_results.html",
+        query=query,
+        shops=shops,
+        products=products
+    )
+
+
 @shop_bp.route("/health")
 def health():
     """Diagnostic route to test database connection."""

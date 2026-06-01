@@ -8,12 +8,18 @@
 
 <p>Browse shops and discover great products!</p>
 
+<form action="/search" method="get">
+  <input type="text" name="q" placeholder="Search shops or products..." required>
+  <button type="submit">Search</button>
+</form>
+
+
 {% if session.get('user_id') %}
-    <a href="/dashboard">Go to Dashboard</a> |
-    <a href="/cart">View Cart</a>
+<a href="/dashboard">Go to Dashboard</a> |
+<a href="/cart">View Cart</a>
 {% else %}
-    <a href="/register">Create your shop</a> |
-    <a href="/login">Login</a>
+<a href="/register">Create your shop</a> |
+<a href="/login">Login</a>
 {% endif %}
 
 <hr>
@@ -22,12 +28,12 @@
 
 {% if shops %}
 <div class="shops-grid">
-    {% for shop in shops %}
-    <div class="shop-card">
-        <h4><a href="/shop/{{ shop.slug }}">{{ shop.shop_name }}</a></h4>
-        <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
-    </div>
-    {% endfor %}
+  {% for shop in shops %}
+  <div class="shop-card">
+    <h4><a href="/shop/{{ shop.slug }}">{{ shop.shop_name }}</a></h4>
+    <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
+  </div>
+  {% endfor %}
 </div>
 {% else %}
 <p>No shops available yet. <a href="/register">Be the first to create one!</a></p>
