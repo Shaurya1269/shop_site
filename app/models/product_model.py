@@ -18,3 +18,38 @@ def create_product(shop_id, name, price, description):
     conn.close()
 
     return {'id': product_id}
+
+
+def get_product_by_id(product_id):
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("""
+        SELECT * FROM products WHERE id = %s
+    """, (product_id,))
+    product = cur.fetchone()
+    cur.close()
+    conn.close()
+    return product
+
+
+def update_product(product_id, name, price, description):
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("""
+        UPDATE products SET name = %s, price = %s, description = %s WHERE id = %s
+    """, (name, price, description, product_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def delete_product(product_id):
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("""
+        DELETE FROM products WHERE id = %s
+    """, (product_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
