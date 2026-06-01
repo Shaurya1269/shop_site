@@ -41,3 +41,23 @@ def my_orders():
     conn.close()
 
     return render_template("dashboard/orders.html", orders=orders_list)
+
+@order_bp.route("/debug-orders")
+def debug_orders():
+
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    cur.execute("SELECT * FROM orders")
+    orders = cur.fetchall()
+
+    cur.execute("SELECT * FROM order_items")
+    items = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "orders": orders,
+        "order_items": items
+    }
