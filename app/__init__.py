@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+import secrets
 import logging
 from dotenv import load_dotenv
 
@@ -9,12 +10,21 @@ def create_app():
 
     # Load environment variables
     load_dotenv()
-    app.secret_key = os.getenv('SECRET_KEY', 'fallback_secret_key_change_me')
 
-    # Enable logging so errors show in Render logs
-    if not app.debug:
-        logging.basicConfig(level=logging.INFO)
-        app.logger.setLevel(logging.INFO)
+    # Use SECRET_KEY from env; fall back to a random key (invalidates sessions on restart)
+    # For persistent sessions across restarts, always set SECRET_KEY in .env
+    secret = os.getenv('SECRET_KEY')
+    if not secret:
+        app.logger.warning(
+            "SECRET_KEY not set in environment. Generating a random key. "
+            "Sessions will be lost on restart. Set SECRET_KEY in .env for production."
+        )
+        secret = secrets.token_hex(32)
+    app.secret_key = secret
+
+    # Enable structured logging
+    logging.basicConfig(level=logging.INFO)
+    app.logger.setLevel(logging.INFO)
 
     # Auto-create database tables on startup
     _init_db(app)
@@ -30,9 +40,11 @@ def create_app():
     from app.routes.shop_routes import shop_bp
     from app.routes.auth_routes import auth_bp
     from app.routes.order_routes import order_bp
+    from app.routes.product_routes import product_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(shop_bp)
     app.register_blueprint(order_bp)
+    app.register_blueprint(product_bp)
 
     return app
 

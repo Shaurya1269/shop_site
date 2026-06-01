@@ -8,10 +8,10 @@ def create_order(user_id, shop_id, customer_name, phone, address):
     cur = get_cursor(conn)
 
     cur.execute("""
-        INSERT INTO orders (shop_id, customer_name, phone, address)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO orders (shop_id, user_id, customer_name, phone, address)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING id, created_at
-    """, (shop_id, customer_name, phone, address))
+    """, (shop_id, user_id, customer_name, phone, address))
 
     result = cur.fetchone()
     conn.commit()
@@ -21,6 +21,7 @@ def create_order(user_id, shop_id, customer_name, phone, address):
     return {
         'id': result['id'],
         'shop_id': shop_id,
+        'user_id': user_id,
         'customer_name': customer_name,
         'phone': phone,
         'address': address,

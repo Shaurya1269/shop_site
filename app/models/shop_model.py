@@ -24,5 +24,9 @@ def create_shop(user_id, shop_name):
 
 def generate_slug(name):
     """Generate a URL-safe slug from a shop name with a unique suffix."""
-    base = name.lower().replace(" ", "-")
+    import re
+    base = name.lower().strip()
+    base = re.sub(r'[^\w\s-]', '', base)  # strip non-word chars except spaces/dashes
+    base = re.sub(r'[\s_]+', '-', base)   # replace spaces/underscores with dash
+    base = re.sub(r'-+', '-', base).strip('-')  # collapse multiple dashes
     return f"{base}-{str(uuid.uuid4())[:6]}"

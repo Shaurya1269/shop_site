@@ -10,15 +10,16 @@ shop_bp = Blueprint('shop', __name__)
 
 @shop_bp.route("/")
 def home():
-    conn=get_db()
-    cur=conn.cursor()
-    
-    cur.execute("select shop_name,slug from shops")
-    shops=cur.fetchall()
-    
+    conn = get_db()
+    cur = get_cursor(conn)  # RealDictCursor — returns dicts so templates can use shop.shop_name etc.
+
+    cur.execute("SELECT shop_name, slug FROM shops")
+    shops = cur.fetchall()
+
     cur.close()
     conn.close()
-    return render_template("home.html", shops=shops)
+    # Use the richer index.html template (home.html was a minimal duplicate)
+    return render_template("index.html", shops=shops)
 
 
 @shop_bp.route("/health")
@@ -50,7 +51,7 @@ def health():
     except Exception as e:
         return {
             "status": "error",
-            "error": str(e),
+            "error": "Database connection failed. Check server logs.",
             "DATABASE_URL_set": bool(os.getenv("DATABASE_URL"))
         }, 500
 
@@ -244,18 +245,33 @@ def add_to_cart(product_id=None):
     cur.close()
     conn.close()
 
-    return redirect(request.referrer or "/")
+    # Avoid open-redirect: only redirect back to same-site paths
+    referrer = request.referrer
+    if referrer and referrer.startswith(request.host_url):
+        return redirect(referrer)
+    return redirect("/")
 
 
 @shop_bp.route("/update-cart", methods=["POST"])
 @login_required
 def update_cart():
     """Update quantity of a cart item or remove it."""
-    cart_id = request.form.get("cart_id")
+    cart_id_raw = request.form.get("cart_id")
     action = request.form.get("action")  # "increase", "decrease", or "remove"
 
-    if not cart_id or not action:
-        return "Missing parameters", 400
+    if not cart_id_raw or not action:
+        flash("Missing parameters", "danger")
+        return redirect("/cart")
+
+    try:
+        cart_id = int(cart_id_raw)
+    except (ValueError, TypeError):
+        flash("Invalid cart item.", "danger")
+        return redirect("/cart")
+
+    if action not in ("increase", "decrease", "remove"):
+        flash("Invalid action.", "danger")
+        return redirect("/cart")
 
     conn = get_db()
     cur = get_cursor(conn)

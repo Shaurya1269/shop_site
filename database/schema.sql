@@ -30,11 +30,13 @@ CREATE TABLE IF NOT EXISTS products(
 CREATE TABLE IF NOT EXISTS orders(
     id SERIAL PRIMARY KEY,
     shop_id INTEGER NOT NULL,
+    user_id INTEGER,
     customer_name TEXT NOT NULL,
     phone TEXT NOT NULL,
     address TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_items(
