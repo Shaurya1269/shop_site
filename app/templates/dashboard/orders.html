@@ -16,6 +16,29 @@
     <p><strong>Phone:</strong> {{ order.phone }}</p>
     <p><strong>Address:</strong> {{ order.address }}</p>
     <p><strong>Date:</strong> {{ order.created_at }}</p>
+    <p><strong>Status:</strong>{{order.status}}</p>
+
+
+    {% if is_shop_owner %}
+    <div style="margin: 10px 0; display: flex; gap: 10px;">
+        <form action="/update-order-status/{{order.id}}/Accepted" method="post">
+            <button type="submit">Accept Order</button>
+        </form>
+
+        <form action="/update-order-status/{{order.id}}/Shipped" method="post">
+            <button type="submit">Ship</button>
+        </form>
+
+        <form action="/update-order-status/{{order.id}}/Delivered" method="post">
+            <button type="submit">Deliver</button>
+        </form>
+
+        <form action="/update-order-status/{{order.id}}/Cancelled" method="post">
+            <button type="submit">Cancel</button>
+        </form>
+    </div>
+    {% endif %}
+
 
     <h4>Order Items:</h4>
     {% if order['items'] %}

@@ -45,7 +45,7 @@ def my_orders():
 
         cur.close()
         conn.close()
-        return render_template("dashboard/orders.html", orders=orders_list)
+        return render_template("dashboard/orders.html", orders=orders_list, is_shop_owner=False)
 
     except Exception as exc:
         if conn:
@@ -95,3 +95,37 @@ def debug_orders():
         indent=2
     )
     return payload, 200, {"Content-Type": "application/json"}
+
+@order_bp.route("/update-order-status/<int:order_id>/<status>", methods=["POST"])
+@login_required
+def update_order_status(order_id, status):
+    allowed_statuses = [
+        "Pending", "Accepted", "Shipped", "Delivered", "Cancelled"
+    ]
+    if status not in allowed_statuses:
+        return "Invalid Status", 400
+
+    conn = get_db()
+    cur = get_cursor(conn)
+    
+    # Verify authorization: current user must own the shop this order belongs to
+    cur.execute("""
+        SELECT shops.user_id 
+        FROM orders
+        JOIN shops ON orders.shop_id = shops.id
+        WHERE orders.id = %s
+    """, (order_id,))
+    shop = cur.fetchone()
+    
+    if not shop or shop["user_id"] != session["user_id"]:
+        cur.close()
+        conn.close()
+        return "Unauthorized", 403
+
+    cur.execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/orders")

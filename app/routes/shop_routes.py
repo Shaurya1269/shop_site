@@ -150,7 +150,7 @@ def view_store(slug):
         return "Shop not found", 404
 
     cur.execute(
-        "SELECT id, name, price, description FROM products WHERE shop_id = %s",
+        "SELECT id, name, price, description,stock FROM products WHERE shop_id = %s",
         (shop['id'],)
     )
     products = cur.fetchall()
@@ -181,6 +181,8 @@ def add_product():
         name = request.form.get("name")
         price = request.form.get('price')
         description = request.form.get('description')
+        stock = request.form.get("stock")
+
 
         if not name or not price:
             cur.close()
@@ -189,15 +191,16 @@ def add_product():
 
         try:
             price = float(price)
+            stock = int(stock) if stock is not None else 0
         except ValueError:
             cur.close()
             conn.close()
-            return "Price must be a number", 400
+            return "Price and stock must be numbers", 400
 
         cur.execute(
-            """INSERT INTO products (shop_id, name, price, description)
-               VALUES (%s, %s, %s, %s)""",
-            (shop_id, name, price, description)
+            """INSERT INTO products (shop_id, name, price, description,stock)
+               VALUES (%s, %s, %s, %s,%s)""",
+            (shop_id, name, price, description,stock)
         )
         conn.commit()
         cur.close()
@@ -230,13 +233,18 @@ def add_to_cart(product_id=None):
     conn = get_db()
     cur = get_cursor(conn)
 
-    cur.execute("SELECT id, shop_id FROM products WHERE id = %s", (product_id,))
+    cur.execute("SELECT id, shop_id,stock FROM products WHERE id = %s", (product_id,))
     new_product = cur.fetchone()
 
     if not new_product:
         cur.close()
         conn.close()
         return "Product not found", 404
+
+    if new_product["stock"]<=0:
+        cur.close()
+        conn.close()
+        return "Product out of stock",400
 
     cur.execute("""
         SELECT DISTINCT products.shop_id
@@ -256,6 +264,11 @@ def add_to_cart(product_id=None):
         WHERE user_id = %s AND product_id = %s
     """, (session["user_id"], product_id))
     existing_item = cur.fetchone()
+
+    if existing_item and existing_item['quantity'] >= new_product["stock"]:
+        cur.close()
+        conn.close()
+        return f"You can only order maximum of {new_product['stock']} items of this product",400
 
     if existing_item:
         cur.execute("""
@@ -459,10 +472,10 @@ def checkout():
 
         # ── 5. Create order row ───────────────────────────────────
         cur.execute("""
-            INSERT INTO orders (shop_id, user_id, customer_name, phone, address)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id, created_at
-        """, (shop_id, user_id, customer_name, phone, address))
+        """, (shop_id, user_id, customer_name, phone, address, 'Pending'))
         order_row = cur.fetchone()
         order_id  = order_row['id']
         logger.info(f"[checkout] order inserted — order_id={order_id}  created_at={order_row['created_at']}")
@@ -474,6 +487,9 @@ def checkout():
                 INSERT INTO order_items (order_id, product_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
             """, (order_id, item['product_id'], item['quantity'], price))
+
+            cur.execute("""update products set stock=stock -  %s where id=%s""",(item['quantity'],item['product_id']))
+
             logger.info(f"[checkout] order_item inserted — product_id={item['product_id']}  qty={item['quantity']}  price={price}")
 
         # ── 7. Clear the cart ─────────────────────────────────────
@@ -541,4 +557,4 @@ def orders():
     cur.close()
     conn.close()
 
-    return render_template("dashboard/orders.html", orders=orders_list)
+    return render_template("dashboard/orders.html", orders=orders_list, is_shop_owner=True)
