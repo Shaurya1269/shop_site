@@ -1,24 +1,24 @@
+import logging
+import traceback
 from flask import Blueprint, render_template, session, redirect, request, flash
-from app.models.shop_model import create_shop
 from app.models.product_model import create_product
 from app.utils.db import get_db, get_cursor
 from app.utils.decorators import login_required
+from app.models.shop_model import create_shop
 import os
 
+logger = logging.getLogger(__name__)
 shop_bp = Blueprint('shop', __name__)
 
 
 @shop_bp.route("/")
 def home():
     conn = get_db()
-    cur = get_cursor(conn)  # RealDictCursor — returns dicts so templates can use shop.shop_name etc.
-
+    cur = get_cursor(conn)
     cur.execute("SELECT shop_name, slug FROM shops")
     shops = cur.fetchall()
-
     cur.close()
     conn.close()
-    # Use the richer index.html template (home.html was a minimal duplicate)
     return render_template("index.html", shops=shops)
 
 
@@ -68,7 +68,6 @@ def health():
         cur.execute("SELECT 1")
         cur.close()
 
-        # Check if tables exist
         cur = get_cursor(conn)
         cur.execute("""
             SELECT table_name FROM information_schema.tables
@@ -109,11 +108,9 @@ def dashboard():
     conn = get_db()
     cur = get_cursor(conn)
 
-    # Get the user's shop if they have one
     cur.execute("SELECT * FROM shops WHERE user_id = %s", (session['user_id'],))
     shop = cur.fetchone()
 
-    # Get products if shop exists
     products = []
     if shop:
         cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
@@ -132,7 +129,7 @@ def create_shop_page():
         shop_name = request.form.get("shop_name")
         if not shop_name:
             return "Shop name is required", 400
-        shop = create_shop(session['user_id'], shop_name)
+        create_shop(session['user_id'], shop_name)
         return redirect("/dashboard")
 
     return render_template("dashboard/create_shop.html")
@@ -144,7 +141,6 @@ def view_store(slug):
     conn = get_db()
     cur = get_cursor(conn)
 
-    # Get shop by slug from the shops table
     cur.execute("SELECT id, shop_name, slug FROM shops WHERE slug = %s", (slug,))
     shop = cur.fetchone()
 
@@ -153,7 +149,6 @@ def view_store(slug):
         conn.close()
         return "Shop not found", 404
 
-    # Get products for this shop
     cur.execute(
         "SELECT id, name, price, description FROM products WHERE shop_id = %s",
         (shop['id'],)
@@ -221,14 +216,12 @@ def add_to_cart(product_id=None):
     if "user_id" not in session:
         return redirect("/login")
 
-    # Accept product_id from URL path or form body
     if product_id is None:
         product_id = request.form.get("product_id")
 
     if not product_id:
         return "Product ID is required", 400
 
-    # Convert to int for safety
     try:
         product_id = int(product_id)
     except (ValueError, TypeError):
@@ -237,7 +230,6 @@ def add_to_cart(product_id=None):
     conn = get_db()
     cur = get_cursor(conn)
 
-    # Verify the product exists and get its shop
     cur.execute("SELECT id, shop_id FROM products WHERE id = %s", (product_id,))
     new_product = cur.fetchone()
 
@@ -246,7 +238,6 @@ def add_to_cart(product_id=None):
         conn.close()
         return "Product not found", 404
 
-    # Check if cart already has items from a different shop
     cur.execute("""
         SELECT DISTINCT products.shop_id
         FROM cart
@@ -260,7 +251,6 @@ def add_to_cart(product_id=None):
         conn.close()
         return "You can only order from one shop at a time. Clear your cart first.", 400
 
-    # Check if product already in cart — increment quantity
     cur.execute("""
         SELECT id, quantity FROM cart
         WHERE user_id = %s AND product_id = %s
@@ -282,7 +272,6 @@ def add_to_cart(product_id=None):
     cur.close()
     conn.close()
 
-    # Avoid open-redirect: only redirect back to same-site paths
     referrer = request.referrer
     if referrer and referrer.startswith(request.host_url):
         return redirect(referrer)
@@ -313,7 +302,6 @@ def update_cart():
     conn = get_db()
     cur = get_cursor(conn)
 
-    # Verify cart item belongs to user
     cur.execute("SELECT id, quantity FROM cart WHERE id = %s AND user_id = %s",
                 (cart_id, session["user_id"]))
     item = cur.fetchone()
@@ -367,8 +355,6 @@ def view_cart():
     """, (session["user_id"],))
 
     items = cur.fetchall()
-
-    # Calculate grand total
     total = sum(float(item['total']) for item in items) if items else 0
 
     cur.close()
@@ -398,7 +384,6 @@ def checkout_page():
         conn.close()
         return redirect("/cart")
 
-    # Calculate grand total
     total = sum(float(item['total']) for item in items)
 
     cur.close()
@@ -410,64 +395,126 @@ def checkout_page():
 @shop_bp.route("/checkout", methods=["POST"])
 @login_required
 def checkout():
-    from app.models.order_model import create_order, add_order_item, validate_cart_single_shop
+    """
+    Process checkout. All DB work uses a SINGLE connection so that
+    the entire operation is one atomic transaction. If anything fails
+    the whole thing is rolled back cleanly.
+    """
+    user_id = session["user_id"]
+    logger.info(f"[checkout] START — user_id={user_id}")
 
-    # Validate cart is from single shop
-    shop_id, error = validate_cart_single_shop(session["user_id"])
-    if error:
-        return error, 400
+    # ── 1. Collect customer details from form ─────────────────────
+    customer_name = request.form.get("customer_name", "").strip()
+    phone         = request.form.get("phone", "").strip()
+    address       = request.form.get("address", "").strip()
 
-    # Get customer details from form
-    customer_name = request.form.get("customer_name")
-    phone = request.form.get("phone")
-    address = request.form.get("address")
+    logger.info(f"[checkout] customer_name={customer_name!r}  phone={phone!r}  address={address!r}")
 
     if not all([customer_name, phone, address]):
-        return "All customer details required", 400
+        logger.warning("[checkout] ABORT — missing customer details")
+        return "All customer details are required", 400
 
-    conn = get_db()
-    cur = get_cursor(conn)
+    # ── 2. Open ONE connection for the entire transaction ─────────
+    conn = None
+    try:
+        conn = get_db()
+        cur  = get_cursor(conn)
 
-    # Get all cart items for user
-    cur.execute("""
-        SELECT cart.id, products.id as product_id, products.price, cart.quantity
-        FROM cart
-        JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
-    """, (session["user_id"],))
+        # ── 3. Validate cart — must be non-empty, single shop ─────
+        cur.execute("""
+            SELECT DISTINCT products.shop_id
+            FROM cart
+            JOIN products ON cart.product_id = products.id
+            WHERE cart.user_id = %s
+        """, (user_id,))
+        shops = cur.fetchall()
+        logger.info(f"[checkout] shops in cart: {[s['shop_id'] for s in shops]}")
 
-    cart_items = cur.fetchall()
+        if len(shops) == 0:
+            cur.close(); conn.close()
+            return "Your cart is empty", 400
+        if len(shops) > 1:
+            cur.close(); conn.close()
+            return "You can only order from one shop at a time", 400
 
-    if not cart_items:
+        shop_id = shops[0]['shop_id']
+        logger.info(f"[checkout] shop_id={shop_id}")
+
+        # ── 4. Fetch cart items ───────────────────────────────────
+        cur.execute("""
+            SELECT cart.id     AS cart_id,
+                   products.id AS product_id,
+                   products.price,
+                   cart.quantity
+            FROM cart
+            JOIN products ON cart.product_id = products.id
+            WHERE cart.user_id = %s
+        """, (user_id,))
+        cart_items = cur.fetchall()
+        logger.info(f"[checkout] cart_items count={len(cart_items)}  items={[dict(i) for i in cart_items]}")
+
+        if not cart_items:
+            cur.close(); conn.close()
+            return "Cart is empty", 400
+
+        # ── 5. Create order row ───────────────────────────────────
+        cur.execute("""
+            INSERT INTO orders (shop_id, user_id, customer_name, phone, address)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id, created_at
+        """, (shop_id, user_id, customer_name, phone, address))
+        order_row = cur.fetchone()
+        order_id  = order_row['id']
+        logger.info(f"[checkout] order inserted — order_id={order_id}  created_at={order_row['created_at']}")
+
+        # ── 6. Insert order items ─────────────────────────────────
+        for item in cart_items:
+            price = float(item['price'])
+            cur.execute("""
+                INSERT INTO order_items (order_id, product_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (order_id, item['product_id'], item['quantity'], price))
+            logger.info(f"[checkout] order_item inserted — product_id={item['product_id']}  qty={item['quantity']}  price={price}")
+
+        # ── 7. Clear the cart ─────────────────────────────────────
+        cur.execute("DELETE FROM cart WHERE user_id = %s", (user_id,))
+        logger.info(f"[checkout] cart cleared for user_id={user_id}")
+
+        # ── 8. Commit everything atomically ───────────────────────
+        conn.commit()
         cur.close()
         conn.close()
-        return "Cart is empty", 400
+        logger.info(f"[checkout] SUCCESS — redirecting to /my-orders  order_id={order_id}")
+        return redirect("/my-orders")
 
-    # Create order
-    order = create_order(session["user_id"], shop_id,
-                         customer_name, phone, address)
-
-    # Add items to order
-    for item in cart_items:
-        add_order_item(order['id'], item['product_id'],
-                       item['quantity'], float(item['price']))
-
-    # Clear cart
-    cur.execute("DELETE FROM cart WHERE user_id = %s", (session["user_id"],))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return redirect("/my-orders")
+    except Exception as exc:
+        # Roll back the whole transaction so no partial data is left
+        if conn:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
+        tb = traceback.format_exc()
+        logger.error(f"[checkout] EXCEPTION:\n{tb}")
+        # Return the traceback in the response body so it's visible on the page
+        # during development; replace with a friendly page in production.
+        return (
+            f"<pre>Checkout failed.\n\n{tb}</pre>",
+            500
+        )
 
 
 @shop_bp.route("/orders")
 @login_required
 def orders():
+    """Shop owner view — shows orders placed at MY shop."""
     conn = get_db()
-    cur = get_cursor(conn)
+    cur  = get_cursor(conn)
 
-    # Get orders for shops owned by this user
     cur.execute("""
         SELECT orders.*, shops.shop_name
         FROM orders
@@ -478,7 +525,6 @@ def orders():
 
     orders_data = cur.fetchall()
 
-    # Get order items for each order
     orders_list = []
     for order in orders_data:
         cur.execute("""
@@ -487,14 +533,12 @@ def orders():
             JOIN products ON order_items.product_id = products.id
             WHERE order_items.order_id = %s
         """, (order['id'],))
-
         items = cur.fetchall()
         order_dict = dict(order)
-        order_dict['items'] = items
+        order_dict['items'] = [dict(i) for i in items]
         orders_list.append(order_dict)
 
     cur.close()
     conn.close()
 
     return render_template("dashboard/orders.html", orders=orders_list)
-

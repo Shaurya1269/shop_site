@@ -50,7 +50,7 @@ def create_app():
 
 
 def _init_db(app):
-    """Auto-create tables on app startup if they don't exist."""
+    """Auto-create tables and run migrations on app startup."""
     try:
         _run_schema()
         app.logger.info("Database tables verified/created successfully.")
@@ -60,7 +60,7 @@ def _init_db(app):
 
 
 def _run_schema():
-    """Execute schema.sql to create tables and run migrations."""
+    """Execute schema.sql to create tables and run all migrations."""
     from app.utils.db import get_db, get_cursor
 
     schema_path = os.path.join(os.path.dirname(
@@ -70,26 +70,26 @@ def _run_schema():
         schema = f.read()
 
     conn = get_db()
-    cur = get_cursor(conn)
-    
-    # Run base schema
+    cur  = get_cursor(conn)
+
+    # ── Base schema ────────────────────────────────────────────────
     cur.execute(schema)
-    
-    # Run migration 1: add user_id to orders table if it doesn't exist
-    migration_1 = """
-    DO $$
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns
-            WHERE table_name='orders' AND column_name='user_id'
-        ) THEN
-            ALTER TABLE orders
-                ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
-        END IF;
-    END $$;
-    """
-    cur.execute(migration_1)
-    
+
+    # ── Migration 1: ensure user_id column exists on orders ───────
+    # The original schema omitted user_id; this migration is idempotent.
+    cur.execute("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'orders' AND column_name = 'user_id'
+            ) THEN
+                ALTER TABLE orders
+                    ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+            END IF;
+        END $$;
+    """)
+
     conn.commit()
     cur.close()
     conn.close()

@@ -1,11 +1,24 @@
 from app.utils.db import get_db, get_cursor
-from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_order(user_id, shop_id, customer_name, phone, address):
-    """Create a new order with customer details."""
+    """
+    DEPRECATED — checkout() in shop_routes.py now handles order
+    creation directly on its own single connection.
+    This function is kept for backward-compatibility only.
+    Do NOT call it from checkout() — it opens its own connection
+    which breaks the atomic transaction guarantee.
+    """
+    logger.warning(
+        "create_order() called as a standalone function — "
+        "this bypasses the atomic transaction in checkout(). "
+        "Prefer inline SQL inside checkout()."
+    )
     conn = get_db()
-    cur = get_cursor(conn)
+    cur  = get_cursor(conn)
 
     cur.execute("""
         INSERT INTO orders (shop_id, user_id, customer_name, phone, address)
@@ -19,25 +32,25 @@ def create_order(user_id, shop_id, customer_name, phone, address):
     conn.close()
 
     return {
-        'id': result['id'],
-        'shop_id': shop_id,
-        'user_id': user_id,
+        'id':            result['id'],
+        'shop_id':       shop_id,
+        'user_id':       user_id,
         'customer_name': customer_name,
-        'phone': phone,
-        'address': address,
-        'created_at': result['created_at']
+        'phone':         phone,
+        'address':       address,
+        'created_at':    result['created_at']
     }
 
 
 def validate_cart_single_shop(user_id):
     """Check if all cart items are from the same shop.
-    
+
     Returns:
-        (shop_id, None) if all items are from one shop.
-        (None, error_message) if cart is empty or has items from multiple shops.
+        (shop_id, None)           — all items from one shop.
+        (None, error_message)     — cart empty or multi-shop.
     """
     conn = get_db()
-    cur = get_cursor(conn)
+    cur  = get_cursor(conn)
 
     cur.execute("""
         SELECT DISTINCT products.shop_id
@@ -59,9 +72,16 @@ def validate_cart_single_shop(user_id):
 
 
 def add_order_item(order_id, product_id, quantity, price):
-    """Add an item to an order with a price snapshot."""
+    """
+    DEPRECATED — checkout() in shop_routes.py now handles order_item
+    insertion directly. This function is kept for backward-compatibility.
+    """
+    logger.warning(
+        "add_order_item() called as a standalone function — "
+        "this bypasses the atomic transaction in checkout()."
+    )
     conn = get_db()
-    cur = get_cursor(conn)
+    cur  = get_cursor(conn)
 
     cur.execute("""
         INSERT INTO order_items (order_id, product_id, quantity, price)
@@ -75,9 +95,9 @@ def add_order_item(order_id, product_id, quantity, price):
     conn.close()
 
     return {
-        'id': item_id,
-        'order_id': order_id,
+        'id':         item_id,
+        'order_id':   order_id,
         'product_id': product_id,
-        'quantity': quantity,
-        'price': price
+        'quantity':   quantity,
+        'price':      price
     }
