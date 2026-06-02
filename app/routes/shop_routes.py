@@ -458,7 +458,7 @@ def checkout():
     cur.close()
     conn.close()
 
-    return redirect("/orders")
+    return redirect("/my-orders")
 
 
 @shop_bp.route("/orders")
