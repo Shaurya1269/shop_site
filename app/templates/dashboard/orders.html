@@ -7,34 +7,35 @@
 <h2>Your Orders</h2>
 
 {% if orders %}
-    {% for order in orders %}
-    <div class="order-card" style="border: 1px solid #ddd; margin: 16px 0; padding: 16px; border-radius: 6px; background: #fff;">
-        <h3 style="margin-top:0;">Order #{{ order.id }}</h3>
-        <p><strong>Shop:</strong> {{ order.shop_name }}</p>
-        <p><strong>Customer:</strong> {{ order.customer_name }}</p>
-        <p><strong>Phone:</strong> {{ order.phone }}</p>
-        <p><strong>Address:</strong> {{ order.address }}</p>
-        <p><strong>Date:</strong> {{ order.created_at }}</p>
+{% for order in orders %}
+<div class="order-card"
+    style="border: 1px solid #ddd; margin: 16px 0; padding: 16px; border-radius: 6px; background: #fff;">
+    <h3 style="margin-top:0;">Order #{{ order.id }}</h3>
+    <p><strong>Shop:</strong> {{ order.shop_name }}</p>
+    <p><strong>Customer:</strong> {{ order.customer_name }}</p>
+    <p><strong>Phone:</strong> {{ order.phone }}</p>
+    <p><strong>Address:</strong> {{ order.address }}</p>
+    <p><strong>Date:</strong> {{ order.created_at }}</p>
 
-        <h4>Order Items:</h4>
-        {% if order.items %}
-        <ul>
-        {% for item in order.items %}
-            <li>
-                {{ item.product_name }}
-                — Qty: {{ item.quantity }}
-                — ₹{{ "%.2f" | format(item.price | float) }}
-            </li>
+    <h4>Order Items:</h4>
+    {% if order['items'] %}
+    <ul>
+        {% for item in order['items'] %}
+        <li>
+            {{ item.product_name }}
+            — Qty: {{ item.quantity }}
+            — ₹{{ "%.2f" | format(item.price | float) }}
+        </li>
         {% endfor %}
-        </ul>
-        {% else %}
-        <p style="color:#888;">No items found for this order.</p>
-        {% endif %}
-    </div>
-    {% endfor %}
+    </ul>
+    {% else %}
+    <p style="color:#888;">No items found for this order.</p>
+    {% endif %}
+</div>
+{% endfor %}
 {% else %}
-    <p>No orders found.</p>
-    <a href="/">Browse shops</a>
+<p>No orders found.</p>
+<a href="/">Browse shops</a>
 {% endif %}
 
 {% endblock %}
