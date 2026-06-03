@@ -315,8 +315,12 @@ def update_cart():
     conn = get_db()
     cur = get_cursor(conn)
 
-    cur.execute("SELECT id, quantity FROM cart WHERE id = %s AND user_id = %s",
-                (cart_id, session["user_id"]))
+    cur.execute("""
+        SELECT cart.id, cart.quantity, products.stock 
+        FROM cart 
+        JOIN products ON cart.product_id = products.id
+        WHERE cart.id = %s AND cart.user_id = %s
+    """, (cart_id, session["user_id"]))
     item = cur.fetchone()
 
     if not item:
@@ -329,7 +333,10 @@ def update_cart():
     elif action == "decrease":
         cur.execute("UPDATE cart SET quantity = quantity - 1 WHERE id = %s", (cart_id,))
     elif action == "increase":
-        cur.execute("UPDATE cart SET quantity = quantity + 1 WHERE id = %s", (cart_id,))
+        if item["quantity"] >= item["stock"]:
+            flash(f"You can only order maximum of {item['stock']} items of this product", "danger")
+        else:
+            cur.execute("UPDATE cart SET quantity = quantity + 1 WHERE id = %s", (cart_id,))
 
     conn.commit()
     cur.close()
@@ -458,6 +465,8 @@ def checkout():
             SELECT cart.id     AS cart_id,
                    products.id AS product_id,
                    products.price,
+                   products.stock,
+                   products.name AS product_name,
                    cart.quantity
             FROM cart
             JOIN products ON cart.product_id = products.id
@@ -469,6 +478,11 @@ def checkout():
         if not cart_items:
             cur.close(); conn.close()
             return "Cart is empty", 400
+
+        for item in cart_items:
+            if item['quantity'] > item['stock']:
+                cur.close(); conn.close()
+                return f"Not enough stock for product '{item['product_name']}'. Only {item['stock']} left.", 400
 
         # ── 5. Create order row ───────────────────────────────────
         cur.execute("""

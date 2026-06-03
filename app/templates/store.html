@@ -13,9 +13,16 @@
 {% if products %}
 {% for product in products %}
 <div style="border:1px solid #ddd; padding:15px; margin:10px; border-radius:8px;">
+
+
+    {% if product.image_url %}
+    <img src="{{product.image_url}}" alt="{{product.name}}" width="200">
+    {% endif %}
+
     <h4>{{ product.name }}</h4>
     <p>{{ product.description or 'No description' }}</p>
     <b>₹{{ "%.2f"|format(product.price) }}</b>
+    <p>Stock: {{product.stock}}</p>
 
     <form action="/add-to-cart" method="POST" style="margin-top: 8px;">
         <input type="hidden" name="product_id" value="{{ product.id }}">

@@ -28,18 +28,21 @@ def edit_product(product_id):
         name = request.form.get("name")
         price = request.form.get("price")
         description = request.form.get("description")
+        stock = request.form.get("stock")
 
         try:
             price = float(price)
+            stock = int(stock) if stock is not None else 0
         except (ValueError, TypeError):
-            flash("Price must be a valid number", "danger")
+            flash("Price and stock must be a valid number", "danger")
             return render_template("dashboard/edit_product.html", product=product)
 
         update_product(
             product_id,
             name,
             price,
-            description
+            description,
+            stock
         )
         return redirect(url_for("shop.dashboard"))
 
