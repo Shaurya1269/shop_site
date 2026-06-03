@@ -32,12 +32,17 @@ def get_product_by_id(product_id):
     return product
 
 
-def update_product(product_id, name, price, description, stock):
+def update_product(product_id, name, price, description, stock, image_url=None):
     conn = get_db()
     cur = get_cursor(conn)
-    cur.execute("""
-        UPDATE products SET name = %s, price = %s, description = %s, stock = %s WHERE id = %s
-    """, (name, price, description, stock, product_id))
+    if image_url:
+        cur.execute("""
+            UPDATE products SET name = %s, price = %s, description = %s, stock = %s, image_url = %s WHERE id = %s
+        """, (name, price, description, stock, image_url, product_id))
+    else:
+        cur.execute("""
+            UPDATE products SET name = %s, price = %s, description = %s, stock = %s WHERE id = %s
+        """, (name, price, description, stock, product_id))
     conn.commit()
     cur.close()
     conn.close()

@@ -197,10 +197,26 @@ def add_product():
             conn.close()
             return "Price and stock must be numbers", 400
 
+        image_url = None
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename != '':
+                import os
+                import uuid
+                from werkzeug.utils import secure_filename
+                from flask import current_app
+
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                upload_path = os.path.join(current_app.root_path, "static", "uploads")
+                os.makedirs(upload_path, exist_ok=True)
+                file.save(os.path.join(upload_path, unique_filename))
+                image_url = f"/static/uploads/{unique_filename}"
+
         cur.execute(
-            """INSERT INTO products (shop_id, name, price, description,stock)
-               VALUES (%s, %s, %s, %s,%s)""",
-            (shop_id, name, price, description,stock)
+            """INSERT INTO products (shop_id, name, price, description, stock, image_url)
+               VALUES (%s, %s, %s, %s, %s, %s)""",
+            (shop_id, name, price, description, stock, image_url)
         )
         conn.commit()
         cur.close()

@@ -7,7 +7,7 @@
 
 <h2>Edit Product</h2>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     <label>Name: </label><br>
     <input type="text" name="name" value="{{product.name}}" required> <br><br>
 
@@ -19,6 +19,9 @@
 
     <label>Stock</label><br>
     <input type="number" name="stock" value="{{product.stock}}" min="0" required><br><br>
+
+    <label>Product Image (leave empty to keep current)</label><br>
+    <input type="file" name="image" accept="image/*"><br><br>
 
     <button type="submit">Save changes</button>
 

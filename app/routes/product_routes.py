@@ -37,12 +37,29 @@ def edit_product(product_id):
             flash("Price and stock must be a valid number", "danger")
             return render_template("dashboard/edit_product.html", product=product)
 
+        image_url = None
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename != '':
+                import os
+                import uuid
+                from werkzeug.utils import secure_filename
+                from flask import current_app
+
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                upload_path = os.path.join(current_app.root_path, "static", "uploads")
+                os.makedirs(upload_path, exist_ok=True)
+                file.save(os.path.join(upload_path, unique_filename))
+                image_url = f"/static/uploads/{unique_filename}"
+
         update_product(
             product_id,
             name,
             price,
             description,
-            stock
+            stock,
+            image_url
         )
         return redirect(url_for("shop.dashboard"))
 
