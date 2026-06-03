@@ -10,18 +10,23 @@
 
 {% if products %}
 <div class="products-grid">
-{% for product in products %}
-<div class="product-card">
+  {% for product in products %}
+  <div class="product-card">
+
+    {% if product.image_url %}
+    <img src="{{ product.image_url }}" alt="{{ product.name }}"
+      style="max-width: 150px; display: block; margin-bottom: 10px;">
+    {% endif %}
     <h4>{{ product.name }}</h4>
     <p class="product-desc">{{ product.description or 'No description' }}</p>
     <b class="product-price">₹{{ "%.2f"|format(product.price) }}</b>
 
     <form action="/add-to-cart" method="POST" class="add-to-cart-form">
-        <input type="hidden" name="product_id" value="{{ product.id }}">
-        <button type="submit" class="btn-add-cart">Add to Cart</button>
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      <button type="submit" class="btn-add-cart">Add to Cart</button>
     </form>
-</div>
-{% endfor %}
+  </div>
+  {% endfor %}
 </div>
 {% else %}
 <p>No products found</p>
