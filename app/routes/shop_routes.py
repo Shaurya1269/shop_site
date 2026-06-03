@@ -150,7 +150,7 @@ def view_store(slug):
         return "Shop not found", 404
 
     cur.execute(
-        "SELECT id, name, price, description,stock FROM products WHERE shop_id = %s",
+        "SELECT id, name, price, description, stock, image_url FROM products WHERE shop_id = %s",
         (shop['id'],)
     )
     products = cur.fetchall()
@@ -182,6 +182,7 @@ def add_product():
         price = request.form.get('price')
         description = request.form.get('description')
         stock = request.form.get("stock")
+        image_url=request.form.get("image_url")
 
 
         if not name or not price:
@@ -197,8 +198,8 @@ def add_product():
             conn.close()
             return "Price and stock must be numbers", 400
 
-        image_url = None
-        if "image" in request.files:
+        image_url = request.form.get("image_url")
+        if "image" in request.files and request.files["image"].filename != '':
             file = request.files["image"]
             if file and file.filename != '':
                 import os

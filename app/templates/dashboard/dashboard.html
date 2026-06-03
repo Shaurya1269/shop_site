@@ -17,6 +17,9 @@
         <h4>Your Products ({{ products|length }})</h4>
         {% for product in products %}
         <div style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:5px;">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width: 150px; display: block; margin-bottom: 10px;">
+            {% endif %}
             <strong>{{ product.name }}</strong> — ₹{{ "%.2f"|format(product.price) }}
             <p>{{ product.description }}</p>
             <br>
