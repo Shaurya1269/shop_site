@@ -3,20 +3,20 @@
    Accent: #D32F2F | Font: Inter | Max-width: 1200px
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
 /* ===== CSS Custom Properties ===== */
 :root {
-  --color-bg:           #F0F4F8; /* Hint of light blue */
-  --color-bg-section:   rgba(255, 255, 255, 0.4);
-  --color-text-primary: #1A202C;
-  --color-text-secondary: #4A5568;
-  --color-accent:       #0066FF; /* lively blue */
-  --color-accent-hover: #0052CC;
-  --color-border:       rgba(255, 255, 255, 0.5);
-  --color-border-hover: rgba(255, 255, 255, 0.8);
-  --color-success:      #10B981; /* lively green */
-  --color-danger:       #EF4444; /* lively red */
+  --color-bg:           #1C1E21; /* Dark charcoal */
+  --color-bg-section:   rgba(255, 255, 255, 0.02);
+  --color-text-primary: #FDFDFD;
+  --color-text-secondary: #A0AAB2;
+  --color-accent:       #FF66B2; /* brighter, cute color for search and buttons */
+  --color-accent-hover: #FF3399;
+  --color-border:       rgba(255, 255, 255, 0.15);
+  --color-border-hover: rgba(255, 255, 255, 0.3);
+  --color-success:      #10B981;
+  --color-danger:       #EF4444;
   --color-warning:      #F59E0B;
   
   --radius-sm:          4px;
@@ -48,9 +48,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-bg);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 102, 255, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.04) 0px, transparent 50%);
+    radial-gradient(at 20% 0%, rgba(255, 102, 178, 0.03) 0px, transparent 40%),
+    radial-gradient(at 80% 100%, rgba(0, 229, 255, 0.03) 0px, transparent 40%);
   background-attachment: fixed;
   color: var(--color-text-primary);
   line-height: 1.5;
@@ -75,6 +74,7 @@ a:hover {
 
 /* ===== Typography ===== */
 h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
   color: var(--color-text-primary);
   font-weight: 700;
   line-height: 1.2;
@@ -91,10 +91,10 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(240, 244, 248, 0.75);
+  background: rgba(28, 30, 33, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   height: var(--nav-height);
 }
 
@@ -109,7 +109,8 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 }
 
 .nav-logo {
-  font-size: 24px;
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -0.5px;
@@ -127,16 +128,18 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 
 .nav-search-form {
   display: flex;
-  background: var(--color-bg-section);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #FF66B2;
+  border-radius: 30px;
   overflow: hidden;
-  transition: border-color var(--transition);
+  transition: all var(--transition);
+  box-shadow: 0 0 12px rgba(255, 102, 178, 0.3);
 }
 
 .nav-search-form:focus-within {
-  border-color: var(--color-accent);
-  background: var(--color-bg);
+  border-color: #00E5FF;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
 }
 
 .nav-search-input {
@@ -310,11 +313,11 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 }
 
 .shop-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   transition: all var(--transition);
   display: flex;
@@ -322,9 +325,9 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 }
 
 .shop-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .shop-banner {
@@ -404,8 +407,8 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 
 .product-image {
   aspect-ratio: 1 / 1;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 12px;
@@ -456,7 +459,7 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
   width: 100%;
   padding: 10px;
   background: var(--color-bg);
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
@@ -558,13 +561,13 @@ input:focus, textarea:focus {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
   padding: 32px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 15px rgba(255, 255, 255, 0.08);
 }
 
 /* ===== Cart Layout ===== */
@@ -720,20 +723,20 @@ input:focus, textarea:focus {
 }
 
 .dash-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
   padding: 24px;
   text-decoration: none;
   transition: all var(--transition);
 }
 
 .dash-card:hover {
-  border-color: rgba(255, 255, 255, 1);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
 }
 
 .dash-icon {
