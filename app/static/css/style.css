@@ -7,17 +7,17 @@
 
 /* ===== CSS Custom Properties ===== */
 :root {
-  --color-bg:           #FFFFFF;
-  --color-bg-section:   #F8F8F8;
-  --color-text-primary: #222222;
-  --color-text-secondary: #666666;
-  --color-accent:       #D32F2F;
-  --color-accent-hover: #B71C1C;
-  --color-border:       #E5E5E5;
-  --color-border-hover: #CCCCCC;
-  --color-success:      #2E7D32;
-  --color-danger:       #D32F2F;
-  --color-warning:      #F57C00;
+  --color-bg:           #F0F4F8; /* Hint of light blue */
+  --color-bg-section:   rgba(255, 255, 255, 0.4);
+  --color-text-primary: #1A202C;
+  --color-text-secondary: #4A5568;
+  --color-accent:       #0066FF; /* lively blue */
+  --color-accent-hover: #0052CC;
+  --color-border:       rgba(255, 255, 255, 0.5);
+  --color-border-hover: rgba(255, 255, 255, 0.8);
+  --color-success:      #10B981; /* lively green */
+  --color-danger:       #EF4444; /* lively red */
+  --color-warning:      #F59E0B;
   
   --radius-sm:          4px;
   --radius-md:          8px;
@@ -25,7 +25,7 @@
   
   --shadow-sm:          0 1px 3px rgba(0,0,0,0.05);
   --shadow-md:          0 4px 12px rgba(0,0,0,0.08);
-  --shadow-hover:       0 8px 24px rgba(0,0,0,0.12);
+  --shadow-hover:       0 8px 32px rgba(31, 38, 135, 0.07), 0 0 15px rgba(0, 102, 255, 0.15);
   
   --transition:         0.2s ease;
   --nav-height:         72px;
@@ -47,6 +47,11 @@ html {
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-bg);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 102, 255, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.04) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   line-height: 1.5;
   min-height: 100vh;
@@ -86,8 +91,10 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(240, 244, 248, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   height: var(--nav-height);
 }
 
@@ -303,18 +310,21 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 }
 
 .shop-card {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: box-shadow var(--transition), transform var(--transition);
+  transition: all var(--transition);
   display: flex;
   flex-direction: column;
 }
 
 .shop-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 1);
 }
 
 .shop-banner {
@@ -394,7 +404,7 @@ p { color: var(--color-text-secondary); margin-bottom: 16px; }
 
 .product-image {
   aspect-ratio: 1 / 1;
-  background: var(--color-bg-section);
+  background: rgba(255, 255, 255, 0.4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -548,10 +558,13 @@ input:focus, textarea:focus {
 }
 
 .card {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-md);
   padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 /* ===== Cart Layout ===== */
@@ -707,17 +720,20 @@ input:focus, textarea:focus {
 }
 
 .dash-card {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-md);
   padding: 24px;
   text-decoration: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: all var(--transition);
 }
 
 .dash-card:hover {
-  border-color: var(--color-text-primary);
-  box-shadow: var(--shadow-sm);
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
 }
 
 .dash-icon {
