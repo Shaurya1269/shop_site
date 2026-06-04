@@ -1,13 +1,31 @@
-{%  extends 'base.html' %}
+{% extends 'base.html' %}
+
+{% block title %}Create Shop — ShopLocal{% endblock %}
 
 {% block content %}
 
-<h2>Create your shop</h2>
-<form action="/create-shop" method="POST">
-    <label>Shop name</label> <br>
-    <input type="text" name='shop_name'> <br><br>
+<div class="auth-wrapper" style="align-items:flex-start;padding-top:40px;">
+    <div style="width:100%;max-width:560px;margin:0 auto;">
 
-    <input type="submit" value="Create Shop">
-</form>
+        <div class="page-title-bar" style="margin-bottom:24px;">
+            <h1 class="page-title">Create your shop</h1>
+            <a href="/dashboard" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="form-card">
+            <form action="/create-shop" method="POST">
+                
+                <div class="form-group">
+                    <label for="shop_name">Shop Name</label>
+                    <input type="text" id="shop_name" name="shop_name" placeholder="Enter your shop name" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
+                    Create Shop
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -6,66 +6,55 @@
 
 <div class="page-title-bar">
     <h1 class="page-title">Checkout</h1>
-    <a href="/cart" class="btn btn-secondary btn-sm">← Back to Cart</a>
+    <a href="/cart" class="btn btn-secondary btn-sm">Back to Cart</a>
 </div>
 
 {% if items %}
 <form method="POST" action="/checkout">
 <div class="checkout-layout">
 
-    <!-- ===== Customer Details Form ===== -->
+    <!-- Customer Details -->
     <div class="checkout-form-card">
-        <h3 class="checkout-section-title">
-            <span>📋</span> Delivery Details
-        </h3>
+        <h3 class="checkout-section-title">Delivery Details</h3>
 
         <div class="form-group">
             <label for="customer_name">Full Name</label>
-            <input type="text" id="customer_name" name="customer_name" placeholder="Your full name" required>
+            <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
         </div>
 
         <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210" required>
+            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
         </div>
 
         <div class="form-group">
             <label for="address">Delivery Address</label>
-            <textarea id="address" name="address" rows="4" placeholder="House no., Street, City, State, PIN code" required></textarea>
+            <textarea id="address" name="address" rows="4" placeholder="House no., Street, Area, City, State, PIN" required></textarea>
         </div>
-
-        <!-- Submit on mobile (shown below form, hidden on desktop via summary card) -->
-        <button type="submit" class="btn btn-primary btn-block btn-lg" style="display:none;" id="mobile-place-order">
-            🎉 Place Order
-        </button>
     </div>
 
-    <!-- ===== Order Summary ===== -->
+    <!-- Order Summary -->
     <div class="checkout-summary-card">
-        <h3 class="checkout-section-title">
-            <span>🧾</span> Order Summary
-        </h3>
+        <h3 class="checkout-section-title">Order Summary</h3>
 
         {% for item in items %}
         <div class="checkout-item-row">
             <span class="checkout-item-name">{{ item.name }}</span>
-            <span class="checkout-item-qty">×{{ item.quantity }}</span>
-            <span class="checkout-item-price">₹{{ "%.2f"|format(item.total) }}</span>
+            <span class="checkout-item-qty">x{{ item.quantity }}</span>
+            <span class="checkout-item-price">&#8377;{{ "%.2f"|format(item.total) }}</span>
         </div>
         {% endfor %}
 
-        <div class="checkout-total-row">
-            <span class="checkout-total-label">Grand Total</span>
-            <span class="checkout-total-value">₹{{ "%.2f"|format(total) }}</span>
+        <div class="checkout-total-row" style="margin-top:12px;">
+            <span class="checkout-total-label">Total</span>
+            <span class="checkout-total-value">&#8377;{{ "%.2f"|format(total) }}</span>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:20px;">
-            🎉 Place Order
+            Place Order
         </button>
 
-        <p class="text-muted text-sm text-center" style="margin-top:12px;">
-            🔒 Your information is secure
-        </p>
+        <p class="text-muted text-xs text-center" style="margin-top:10px;">Your order details are secure.</p>
     </div>
 
 </div>
@@ -73,17 +62,13 @@
 
 {% else %}
 <div class="empty-state">
-    <div class="empty-state-icon">🛒</div>
+    <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
     <h3 class="empty-state-title">Your cart is empty</h3>
-    <p class="empty-state-text">Add some products before checking out.</p>
+    <p class="empty-state-text">Add items to your cart before checking out.</p>
     <a href="/cart" class="btn btn-primary">Back to Cart</a>
 </div>
 {% endif %}
-
-<style>
-@media (max-width:768px) {
-    #mobile-place-order { display:flex !important; margin-top:8px; }
-}
-</style>
 
 {% endblock %}

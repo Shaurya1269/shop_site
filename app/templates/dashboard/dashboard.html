@@ -4,39 +4,51 @@
 
 {% block content %}
 
-<!-- ===== Dashboard Header ===== -->
 <div class="dashboard-header">
-    <h1 class="page-title">📊 Dashboard</h1>
-    <p class="text-muted">Manage your shop, products, and orders.</p>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="text-muted text-sm" style="margin-top:4px;">Manage your shop, products, and orders.</p>
 </div>
 
-<!-- ===== Quick Nav Tiles ===== -->
+<!-- Quick Nav -->
 <div class="dashboard-nav-grid">
     <a href="/add-product" class="dashboard-nav-tile">
-        <div class="dashboard-nav-icon">➕</div>
+        <div class="dashboard-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
         <div class="dashboard-nav-label">Add Product</div>
     </a>
     <a href="/orders" class="dashboard-nav-tile">
-        <div class="dashboard-nav-icon">📦</div>
+        <div class="dashboard-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        </div>
         <div class="dashboard-nav-label">Shop Orders</div>
     </a>
     <a href="/my-orders" class="dashboard-nav-tile">
-        <div class="dashboard-nav-icon">🛍️</div>
+        <div class="dashboard-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
         <div class="dashboard-nav-label">My Orders</div>
     </a>
     <a href="/cart" class="dashboard-nav-tile">
-        <div class="dashboard-nav-icon">🛒</div>
+        <div class="dashboard-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
         <div class="dashboard-nav-label">Cart</div>
     </a>
     <a href="/" class="dashboard-nav-tile">
-        <div class="dashboard-nav-icon">🏠</div>
+        <div class="dashboard-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        </div>
         <div class="dashboard-nav-label">Home</div>
     </a>
 </div>
 
-<!-- ===== Products Section ===== -->
-<div class="section-header" style="margin-bottom:16px;">
-    <h2 class="section-title">My Products</h2>
+<!-- Products -->
+<div class="section-head" style="margin-bottom:16px;">
+    <div class="section-head-left">
+        <div class="section-accent-bar"></div>
+        <h2 class="section-title">My Products</h2>
+    </div>
     <a href="/add-product" class="btn btn-primary btn-sm">+ Add Product</a>
 </div>
 
@@ -44,20 +56,22 @@
 <div class="dashboard-products-grid">
     {% for product in products %}
     <div class="dashboard-product-card">
-
         {% if product.image_url %}
         <img src="{{ product.image_url }}" alt="{{ product.name }}" class="dashboard-product-img">
         {% else %}
-        <div class="dashboard-product-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--color-bg-muted);">🛍️</div>
+        <div class="dashboard-product-img" style="display:flex;align-items:center;justify-content:center;background:var(--color-bg-section);">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+            </svg>
+        </div>
         {% endif %}
-
         <div class="dashboard-product-body">
             <div class="dashboard-product-name">{{ product.name }}</div>
-            <div class="dashboard-product-price">₹{{ product.price }}</div>
+            <div class="dashboard-product-price">&#8377;{{ product.price }}</div>
             <div class="dashboard-product-actions">
-                <a href="/product/{{ product.id }}/edit" class="btn btn-outline btn-sm">✏️ Edit</a>
+                <a href="/product/{{ product.id }}/edit" class="btn btn-outline btn-sm">Edit</a>
                 <form action="/product/{{ product.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete this product?')">
-                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
             </div>
         </div>
@@ -65,18 +79,21 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="empty-state" style="padding:48px 24px;margin-bottom:40px;">
-    <div class="empty-state-icon">📦</div>
-    <h3 class="empty-state-title">No Products Yet</h3>
+<div class="empty-state" style="padding:40px 24px;margin-bottom:32px;">
+    <svg class="empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    <h3 class="empty-state-title">No products yet</h3>
     <p class="empty-state-text">Add your first product to start selling.</p>
-    <a href="/add-product" class="btn btn-primary">Add Your First Product</a>
+    <a href="/add-product" class="btn btn-primary">Add Product</a>
 </div>
 {% endif %}
 
-<!-- ===== Orders Section ===== -->
-<div class="section-header" style="margin-top:48px;margin-bottom:20px;">
-    <h2 class="section-title">Recent Orders</h2>
-    <a href="/orders" class="btn btn-outline btn-sm">View All</a>
+<!-- Recent Orders -->
+<div class="section-head" style="margin-top:36px;margin-bottom:16px;">
+    <div class="section-head-left">
+        <div class="section-accent-bar"></div>
+        <h2 class="section-title">Recent Orders</h2>
+    </div>
+    <a href="/orders" class="section-link">View all</a>
 </div>
 
 {% if orders %}
@@ -86,30 +103,25 @@
         <span class="order-card-id">Order #{{ order.id }}</span>
         <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
     </div>
-
     <div class="order-card-meta">
         <div class="order-meta-item">
             <span class="order-meta-label">Customer</span>
-            <span class="order-meta-value">{{ order.user_id }}</span>
+            <span class="order-meta-value">{{ order.customer_name or order.user_id }}</span>
         </div>
         <div class="order-meta-item">
             <span class="order-meta-label">Phone</span>
             <span class="order-meta-value">{{ order.phone }}</span>
         </div>
         <div class="order-meta-item">
-            <span class="order-meta-label">Address</span>
-            <span class="order-meta-value">{{ order.address }}</span>
-        </div>
-        <div class="order-meta-item">
             <span class="order-meta-label">Total</span>
-            <span class="order-meta-value text-accent" style="font-weight:700;">₹{{ order.total }}</span>
+            <span class="order-meta-value" style="font-weight:700;">&#8377;{{ "%.2f"|format(order.total|float) }}</span>
         </div>
     </div>
 </div>
 {% endfor %}
 {% else %}
-<div class="empty-state" style="padding:40px 24px;">
-    <div class="empty-state-icon">📋</div>
+<div class="empty-state" style="padding:36px 24px;">
+    <svg class="empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
     <p class="empty-state-text">No orders received yet.</p>
 </div>
 {% endif %}

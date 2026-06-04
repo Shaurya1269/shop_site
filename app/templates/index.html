@@ -1,122 +1,88 @@
 {% extends "base.html" %}
 
-{% block title %}ShopLocal — Discover Local Shops & Products{% endblock %}
+{% block title %}ShopLocal — Browse Local Shops & Products{% endblock %}
 
 {% block content %}
 
 {% if db_error %}
-<div class="flash flash-danger" style="margin-bottom:24px;">
-    ⚠️ <strong>Database Unavailable:</strong> Could not connect to the database. 
-    If you're running locally, check that your <code>DATABASE_URL</code> in <code>.env</code> is the <strong>External</strong> URL from your Render database settings (not the Internal URL).
+<div class="flash flash-danger" style="margin-bottom:20px;">
+    <strong>Database Unavailable.</strong>
+    The application cannot connect to the database. Check that <code>DATABASE_URL</code> in your <code>.env</code> file is the External URL from your Render database settings.
 </div>
 {% endif %}
 
-<!-- ===== Hero Section ===== -->
-<section class="hero">
-    <div class="hero-eyebrow">🌟 Local Marketplace</div>
-    <h1 class="hero-title">Find Your Favourite<br><span>Local Shops</span></h1>
-    <p class="hero-subtitle">Browse handpicked local businesses and discover products you'll love — all in one place.</p>
-
-    <div class="hero-search">
-        <form action="/search" method="get" class="hero-search-form">
-            <input type="text" name="q" placeholder="Search for shops, bakery, fashion, electronics…" class="hero-search-input" autocomplete="off">
-            <button type="submit" class="hero-search-btn">Search →</button>
+<!-- ===== Search Bar ===== -->
+<div style="background:var(--color-bg-section);border-bottom:1px solid var(--color-border);margin:-28px -24px 28px;padding:20px 24px;">
+    <div style="max-width:680px;margin:0 auto;">
+        <form action="/search" method="get" class="homepage-search-form">
+            <input type="text" name="q" placeholder="Search products or shops" class="homepage-search-input" autocomplete="off">
+            <button type="submit" class="homepage-search-btn">Search</button>
         </form>
     </div>
+</div>
 
-    <div class="hero-stats">
-        <div class="hero-stat">
-            <div class="hero-stat-number">{{ shops|length if shops else '0' }}+</div>
-            <p class="hero-stat-label">Active Shops</p>
+<!-- ===== Browse Categories ===== -->
+<div class="page-section">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-accent-bar"></div>
+            <h2 class="section-title">Browse Categories</h2>
         </div>
-        <div class="hero-stat">
-            <div class="hero-stat-number">100%</div>
-            <p class="hero-stat-label">Local Businesses</p>
-        </div>
-        <div class="hero-stat">
-            <div class="hero-stat-number">Free</div>
-            <p class="hero-stat-label">To Browse</p>
-        </div>
-    </div>
-</section>
-
-<!-- ===== Featured Categories ===== -->
-<section class="categories-section">
-    <div class="section-header">
-        <h2 class="section-title">Browse by Category</h2>
     </div>
     <div class="categories-scroll">
-        <a href="/search?q=bakery" class="category-chip">
-            <span class="category-chip-icon">🥐</span>
-            <span class="category-chip-label">Bakery</span>
-        </a>
-        <a href="/search?q=supplements" class="category-chip">
-            <span class="category-chip-icon">💊</span>
-            <span class="category-chip-label">Supplements</span>
-        </a>
-        <a href="/search?q=fashion" class="category-chip">
-            <span class="category-chip-icon">👗</span>
-            <span class="category-chip-label">Fashion</span>
-        </a>
-        <a href="/search?q=gifts" class="category-chip">
-            <span class="category-chip-icon">🎁</span>
-            <span class="category-chip-label">Gifts</span>
-        </a>
-        <a href="/search?q=electronics" class="category-chip">
-            <span class="category-chip-icon">📱</span>
-            <span class="category-chip-label">Electronics</span>
-        </a>
-        <a href="/search?q=food" class="category-chip">
-            <span class="category-chip-icon">🍱</span>
-            <span class="category-chip-label">Food</span>
-        </a>
-        <a href="/search?q=beauty" class="category-chip">
-            <span class="category-chip-icon">💄</span>
-            <span class="category-chip-label">Beauty</span>
-        </a>
-        <a href="/search?q=sports" class="category-chip">
-            <span class="category-chip-icon">⚽</span>
-            <span class="category-chip-label">Sports</span>
-        </a>
-        <a href="/search?q=stationery" class="category-chip">
-            <span class="category-chip-icon">📓</span>
-            <span class="category-chip-label">Stationery</span>
-        </a>
-        <a href="/search?q=home" class="category-chip">
-            <span class="category-chip-icon">🏠</span>
-            <span class="category-chip-label">Home & Living</span>
-        </a>
+        <a href="/search?q=bakery" class="category-chip">Bakery</a>
+        <a href="/search?q=supplements" class="category-chip">Supplements</a>
+        <a href="/search?q=fashion" class="category-chip">Fashion</a>
+        <a href="/search?q=electronics" class="category-chip">Electronics</a>
+        <a href="/search?q=gifts" class="category-chip">Gifts</a>
+        <a href="/search?q=home+decor" class="category-chip">Home Decor</a>
+        <a href="/search?q=food" class="category-chip">Food &amp; Beverages</a>
+        <a href="/search?q=beauty" class="category-chip">Beauty</a>
+        <a href="/search?q=sports" class="category-chip">Sports</a>
+        <a href="/search?q=stationery" class="category-chip">Stationery</a>
+        <a href="/search?q=toys" class="category-chip">Toys</a>
+        <a href="/search?q=books" class="category-chip">Books</a>
     </div>
-</section>
+</div>
 
-<!-- ===== Available Shops ===== -->
-<section>
-    <div class="section-header">
-        <h2 class="section-title">Available Shops</h2>
-        {% if shops %}
-        <span class="section-subtitle">{{ shops|length }} shop{{ 's' if shops|length != 1 }}</span>
-        {% endif %}
+<!-- ===== Featured Shops ===== -->
+<div class="page-section">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-accent-bar"></div>
+            <h2 class="section-title">
+                Shops
+                {% if shops %}<span class="section-count">&nbsp;({{ shops|length }})</span>{% endif %}
+            </h2>
+        </div>
+        <a href="/search?q=" class="section-link">View all</a>
     </div>
 
     {% if shops %}
     <div class="shops-grid">
         {% for shop in shops %}
         <div class="shop-card">
-            <div class="shop-avatar">{{ shop.shop_name[0].upper() }}</div>
-            <h4 class="shop-card-name">{{ shop.shop_name }}</h4>
-            <p class="shop-card-meta">Local Shop</p>
-            <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
+            <div class="shop-card-image">
+                <div class="shop-card-monogram">{{ shop.shop_name[0].upper() }}</div>
+            </div>
+            <div class="shop-card-body">
+                <div class="shop-card-name">{{ shop.shop_name }}</div>
+                <div class="shop-card-desc">Local shop</div>
+            </div>
+            <div class="shop-card-footer">
+                <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop</a>
+            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon">🏪</div>
-        <h3 class="empty-state-title">No Shops Yet</h3>
-        <p class="empty-state-text">Be the very first to create a shop and start selling!</p>
+        <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <h3 class="empty-state-title">No shops yet</h3>
+        <p class="empty-state-text">Be the first to create a shop on this platform.</p>
         <a href="/register" class="btn btn-primary">Create Your Shop</a>
     </div>
     {% endif %}
-</section>
+</div>
 
 {% endblock %}

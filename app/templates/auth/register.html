@@ -7,38 +7,31 @@
 <div class="auth-wrapper">
     <div class="auth-card">
 
-        <!-- Logo -->
-        <div class="auth-logo">
-            <div class="auth-logo-icon">🛍️</div>
-            <h2 class="auth-title">Create your account</h2>
-            <p class="auth-subtitle">Join ShopLocal and start your own store — it's free!</p>
+        <div class="auth-brand">
+            <div class="auth-brand-name">Shop<span>Local</span></div>
         </div>
 
-        <form method="POST" action="/auth/register">
+        <h2 class="auth-title">Create Account</h2>
+        <p class="auth-subtitle">Join ShopLocal and start selling or shopping locally.</p>
 
+        <form method="POST" action="/auth/register">
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" placeholder="Your name" required autocomplete="name">
+                <input type="text" id="name" name="name" placeholder="Your full name" required autocomplete="name">
             </div>
-
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
             </div>
-
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Create a strong password" required autocomplete="new-password">
             </div>
-
-            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:4px;">
-                Create Account →
-            </button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:4px;">Create Account</button>
         </form>
 
         <div class="auth-footer">
-            Already have an account?
-            <a href="/login" class="text-accent" style="font-weight:600;">Sign in</a>
+            Already have an account? <a href="/login">Sign in</a>
         </div>
     </div>
 </div>

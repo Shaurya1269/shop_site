@@ -1,63 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Search Results for "{{ query }}" — ShopLocal{% endblock %}
+{% block title %}Search Results — ShopLocal{% endblock %}
 
 {% block content %}
 
-<!-- ===== Search Hero ===== -->
-<div class="search-hero">
-    <p class="text-muted text-sm" style="margin-bottom:6px;">Search results for</p>
-    <h1 style="font-size:24px;font-weight:800;margin-bottom:16px;">
-        "<span class="text-accent">{{ query }}</span>"
-    </h1>
-    <form action="/search" method="get" class="hero-search-form" style="max-width:500px;">
-        <input type="text" name="q" value="{{ query }}" class="hero-search-input">
-        <button type="submit" class="hero-search-btn">Search →</button>
+<!-- Search Header -->
+<div class="search-header">
+    <div class="search-query-label">Search results for</div>
+    <div class="search-query-title">"<span>{{ query }}</span>"</div>
+</div>
+
+<!-- Refine Search -->
+<div style="margin-bottom:28px;">
+    <form action="/search" method="get" class="homepage-search-form" style="max-width:560px;">
+        <input type="text" name="q" value="{{ query }}" class="homepage-search-input" autocomplete="off">
+        <button type="submit" class="homepage-search-btn">Search</button>
     </form>
 </div>
 
-<!-- ===== Shop Results ===== -->
-<section class="results-section">
-    <div class="section-header">
-        <h2 class="section-title">🏪 Shops</h2>
-        {% if shops %}
-        <span class="section-subtitle">{{ shops|length }} found</span>
-        {% endif %}
+<!-- Shops Results -->
+<div class="page-section">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-accent-bar"></div>
+            <h2 class="section-title">Shops</h2>
+            {% if shops %}<span class="section-count">&nbsp;{{ shops|length }} found</span>{% endif %}
+        </div>
     </div>
 
     {% if shops %}
     <div class="shops-grid">
         {% for shop in shops %}
         <div class="shop-card">
-            <div class="shop-avatar">{{ shop.shop_name[0].upper() }}</div>
-            <h4 class="shop-card-name">{{ shop.shop_name }}</h4>
-            <p class="shop-card-meta">Local Shop</p>
-            <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
+            <div class="shop-card-image">
+                <div class="shop-card-monogram">{{ shop.shop_name[0].upper() }}</div>
+            </div>
+            <div class="shop-card-body">
+                <div class="shop-card-name">{{ shop.shop_name }}</div>
+                <div class="shop-card-desc">Local shop</div>
+            </div>
+            <div class="shop-card-footer">
+                <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop</a>
+            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="empty-state" style="padding:40px 24px;">
-        <div class="empty-state-icon" style="font-size:40px;">🏪</div>
-        <p class="empty-state-text">No shops found matching "<strong>{{ query }}</strong>"</p>
-    </div>
+    <p class="text-muted text-sm">No shops found matching "{{ query }}".</p>
     {% endif %}
-</section>
+</div>
 
-<!-- ===== Divider ===== -->
+<!-- Divider -->
 <div class="results-divider">
     <div class="results-divider-line"></div>
     <span class="results-divider-label">Products</span>
     <div class="results-divider-line"></div>
 </div>
 
-<!-- ===== Product Results ===== -->
-<section class="results-section">
-    <div class="section-header">
-        <h2 class="section-title">📦 Products</h2>
-        {% if products %}
-        <span class="section-subtitle">{{ products|length }} found</span>
-        {% endif %}
+<!-- Product Results -->
+<div class="page-section">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-accent-bar"></div>
+            <h2 class="section-title">Products</h2>
+            {% if products %}<span class="section-count">&nbsp;{{ products|length }} found</span>{% endif %}
+        </div>
     </div>
 
     {% if products %}
@@ -68,29 +75,28 @@
                 {% if product.image_url %}
                 <img src="{{ product.image_url }}" alt="{{ product.name }}">
                 {% else %}
-                <div class="product-img-placeholder">🛍️</div>
+                <div class="product-img-placeholder">
+                    <svg class="product-img-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+                    </svg>
+                </div>
                 {% endif %}
             </div>
             <div class="product-body">
-                <h4 class="product-name">{{ product.name }}</h4>
-                <p class="product-desc text-muted text-sm">📍 {{ product.shop_name }}</p>
-                <div class="product-footer">
-                    <div class="product-price-row">
-                        <b class="product-price">₹{{ product.price }}</b>
-                    </div>
-                    <a href="/shop/{{ product.slug }}" class="btn btn-outline btn-sm btn-block">Visit Shop</a>
-                </div>
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-desc text-sm" style="color:var(--color-text-light);">{{ product.shop_name }}</div>
+                <div class="product-price" style="margin-top:auto;padding-top:8px;">&#8377;{{ product.price }}</div>
+                <a href="/shop/{{ product.slug }}" class="btn btn-outline btn-sm btn-block" style="margin-top:8px;">Visit Shop</a>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="empty-state" style="padding:40px 24px;">
-        <div class="empty-state-icon" style="font-size:40px;">📦</div>
-        <p class="empty-state-text">No products found matching "<strong>{{ query }}</strong>"</p>
+    <p class="text-muted text-sm">No products found matching "{{ query }}".</p>
+    <div style="margin-top:16px;">
         <a href="/" class="btn btn-outline">Back to Home</a>
     </div>
     {% endif %}
-</section>
+</div>
 
 {% endblock %}
