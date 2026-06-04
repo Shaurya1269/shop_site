@@ -4,71 +4,69 @@
 
 {% block content %}
 
-<div class="page-title-bar">
-    <h1 class="page-title">Checkout</h1>
-    <a href="/cart" class="btn btn-secondary btn-sm">Back to Cart</a>
-</div>
+<div class="container" style="padding:48px 24px;">
 
-{% if items %}
-<form method="POST" action="/checkout">
-<div class="checkout-layout">
-
-    <!-- Customer Details -->
-    <div class="checkout-form-card">
-        <h3 class="checkout-section-title">Delivery Details</h3>
-
-        <div class="form-group">
-            <label for="customer_name">Full Name</label>
-            <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
-        </div>
-
-        <div class="form-group">
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
-        </div>
-
-        <div class="form-group">
-            <label for="address">Delivery Address</label>
-            <textarea id="address" name="address" rows="4" placeholder="House no., Street, Area, City, State, PIN" required></textarea>
-        </div>
+    <div class="section-header">
+        <h1 class="section-title">Checkout</h1>
     </div>
 
-    <!-- Order Summary -->
-    <div class="checkout-summary-card">
-        <h3 class="checkout-section-title">Order Summary</h3>
+    {% if items %}
+    <form method="POST" action="/checkout">
+    <div class="cart-grid">
+        
+        <!-- Delivery Form -->
+        <div class="card">
+            <h2 style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--color-border);">Delivery Details</h2>
+            
+            <div class="form-group">
+                <label for="customer_name">Full Name</label>
+                <input type="text" id="customer_name" name="customer_name" required>
+            </div>
 
-        {% for item in items %}
-        <div class="checkout-item-row">
-            <span class="checkout-item-name">{{ item.name }}</span>
-            <span class="checkout-item-qty">x{{ item.quantity }}</span>
-            <span class="checkout-item-price">&#8377;{{ "%.2f"|format(item.total) }}</span>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Delivery Address</label>
+                <textarea id="address" name="address" rows="4" placeholder="House/Flat No., Street, Area, City, State, PIN" required></textarea>
+            </div>
         </div>
-        {% endfor %}
 
-        <div class="checkout-total-row" style="margin-top:12px;">
-            <span class="checkout-total-label">Total</span>
-            <span class="checkout-total-value">&#8377;{{ "%.2f"|format(total) }}</span>
+        <!-- Order Summary Sidebar -->
+        <div class="cart-summary">
+            <h3 style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--color-border);">Order Summary</h3>
+            
+            <div style="margin-bottom:24px;">
+                {% for item in items %}
+                <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px;">
+                    <span style="color:var(--color-text-secondary);flex:1;padding-right:16px;">{{ item.name }} (x{{ item.quantity }})</span>
+                    <span style="font-weight:600;">&#8377;{{ "%.2f"|format(item.total) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="summary-total">
+                <span>Total to pay</span>
+                <span>&#8377;{{ "%.2f"|format(total) }}</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:32px;padding:16px;font-size:16px;">Place Order</button>
+            <a href="/cart" style="display:block;text-align:center;margin-top:16px;font-size:14px;color:var(--color-text-secondary);text-decoration:underline;">Return to Cart</a>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:20px;">
-            Place Order
-        </button>
-
-        <p class="text-muted text-xs text-center" style="margin-top:10px;">Your order details are secure.</p>
     </div>
+    </form>
+    {% else %}
+    <div class="empty-state">
+        <svg style="margin:0 auto 16px;color:var(--color-text-secondary);" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <h3>Your cart is empty</h3>
+        <p>You cannot checkout without any items.</p>
+        <a href="/" class="btn btn-primary" style="margin-top:16px;">Browse Shops</a>
+    </div>
+    {% endif %}
 
 </div>
-</form>
-
-{% else %}
-<div class="empty-state">
-    <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-    </svg>
-    <h3 class="empty-state-title">Your cart is empty</h3>
-    <p class="empty-state-text">Add items to your cart before checking out.</p>
-    <a href="/cart" class="btn btn-primary">Back to Cart</a>
-</div>
-{% endif %}
 
 {% endblock %}

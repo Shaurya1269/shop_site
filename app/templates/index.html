@@ -1,88 +1,104 @@
 {% extends "base.html" %}
 
-{% block title %}ShopLocal — Browse Local Shops & Products{% endblock %}
-
 {% block content %}
 
-{% if db_error %}
-<div class="flash flash-danger" style="margin-bottom:20px;">
-    <strong>Database Unavailable.</strong>
-    The application cannot connect to the database. Check that <code>DATABASE_URL</code> in your <code>.env</code> file is the External URL from your Render database settings.
-</div>
-{% endif %}
-
-<!-- ===== Search Bar ===== -->
-<div style="background:var(--color-bg-section);border-bottom:1px solid var(--color-border);margin:-28px -24px 28px;padding:20px 24px;">
-    <div style="max-width:680px;margin:0 auto;">
-        <form action="/search" method="get" class="homepage-search-form">
-            <input type="text" name="q" placeholder="Search products or shops" class="homepage-search-input" autocomplete="off">
-            <button type="submit" class="homepage-search-btn">Search</button>
-        </form>
-    </div>
-</div>
-
-<!-- ===== Browse Categories ===== -->
-<div class="page-section">
-    <div class="section-head">
-        <div class="section-head-left">
-            <div class="section-accent-bar"></div>
-            <h2 class="section-title">Browse Categories</h2>
-        </div>
-    </div>
-    <div class="categories-scroll">
-        <a href="/search?q=bakery" class="category-chip">Bakery</a>
-        <a href="/search?q=supplements" class="category-chip">Supplements</a>
-        <a href="/search?q=fashion" class="category-chip">Fashion</a>
-        <a href="/search?q=electronics" class="category-chip">Electronics</a>
-        <a href="/search?q=gifts" class="category-chip">Gifts</a>
-        <a href="/search?q=home+decor" class="category-chip">Home Decor</a>
-        <a href="/search?q=food" class="category-chip">Food &amp; Beverages</a>
-        <a href="/search?q=beauty" class="category-chip">Beauty</a>
-        <a href="/search?q=sports" class="category-chip">Sports</a>
-        <a href="/search?q=stationery" class="category-chip">Stationery</a>
-        <a href="/search?q=toys" class="category-chip">Toys</a>
-        <a href="/search?q=books" class="category-chip">Books</a>
-    </div>
-</div>
-
-<!-- ===== Featured Shops ===== -->
-<div class="page-section">
-    <div class="section-head">
-        <div class="section-head-left">
-            <div class="section-accent-bar"></div>
-            <h2 class="section-title">
-                Shops
-                {% if shops %}<span class="section-count">&nbsp;({{ shops|length }})</span>{% endif %}
-            </h2>
-        </div>
-        <a href="/search?q=" class="section-link">View all</a>
-    </div>
-
-    {% if shops %}
-    <div class="shops-grid">
-        {% for shop in shops %}
-        <div class="shop-card">
-            <div class="shop-card-image">
-                <div class="shop-card-monogram">{{ shop.shop_name[0].upper() }}</div>
+<!-- Categories Section -->
+<div class="container" style="padding-top:24px; padding-bottom:24px;">
+    <div class="categories-row">
+        
+        <a href="/search?q=bakery" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Croissant/Bread Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
-            <div class="shop-card-body">
-                <div class="shop-card-name">{{ shop.shop_name }}</div>
-                <div class="shop-card-desc">Local shop</div>
+            <span class="category-name">Bakery</span>
+        </a>
+
+        <a href="/search?q=supplements" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Pill/Bottle Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="10" width="10" height="12" rx="2"/><path d="M7 6h10v4H7z"/><path d="M10 2h4v4h-4z"/></svg>
             </div>
-            <div class="shop-card-footer">
-                <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop</a>
+            <span class="category-name">Supplements</span>
+        </a>
+
+        <a href="/search?q=fashion" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Shirt Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
             </div>
+            <span class="category-name">Fashion</span>
+        </a>
+
+        <a href="/search?q=electronics" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Laptop Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+            </div>
+            <span class="category-name">Electronics</span>
+        </a>
+
+        <a href="/search?q=gifts" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Gift Box Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="18" height="14" rx="2"/><path d="M12 5H9a2 2 0 00-2 2v1h5zM12 5h3a2 2 0 012 2v1h-5z"/><line x1="12" y1="8" x2="12" y2="22"/><line x1="3" y1="13" x2="21" y2="13"/></svg>
+            </div>
+            <span class="category-name">Gifts</span>
+        </a>
+
+        <a href="/search?q=home+decor" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Home Decor/Lamp Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v8"/><path d="M8 10l-4 8h16l-4-8z"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+            </div>
+            <span class="category-name">Home Decor</span>
+        </a>
+
+        <a href="/search?q=beauty" class="category-card">
+            <div class="category-icon-wrap">
+                <!-- Beauty Icon -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a4 4 0 00-4 4v14h8V6a4 4 0 00-4-4z"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <span class="category-name">Beauty</span>
+        </a>
+
+    </div>
+</div>
+
+<!-- Shops Section -->
+<div class="section-bg">
+    <div class="container">
+        
+        <!-- Featured Shops -->
+        <div class="section-header">
+            <h2 class="section-title">Discover Shops</h2>
+            <a href="/search?q=" class="section-link">View All &rarr;</a>
         </div>
-        {% endfor %}
+
+        {% if shops %}
+        <div class="shop-grid">
+            {% for shop in shops %}
+            <a href="/shop/{{ shop.slug }}" class="shop-card">
+                <div class="shop-banner">
+                    <!-- Placeholder Banner Image using SVG -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                </div>
+                <div class="shop-info">
+                    <div class="shop-name">{{ shop.shop_name }}</div>
+                    <div class="shop-desc">Browse products and offers from {{ shop.shop_name }}. Top rated local business.</div>
+                    <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No shops found</h3>
+            <p>We couldn't find any shops right now. Please check back later.</p>
+        </div>
+        {% endif %}
+
     </div>
-    {% else %}
-    <div class="empty-state">
-        <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-        <h3 class="empty-state-title">No shops yet</h3>
-        <p class="empty-state-text">Be the first to create a shop on this platform.</p>
-        <a href="/register" class="btn btn-primary">Create Your Shop</a>
-    </div>
-    {% endif %}
 </div>
 
 {% endblock %}

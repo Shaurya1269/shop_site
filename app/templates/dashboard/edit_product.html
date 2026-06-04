@@ -4,15 +4,15 @@
 
 {% block content %}
 
-<div class="auth-wrapper" style="align-items:flex-start;padding-top:40px;">
-    <div style="width:100%;max-width:560px;margin:0 auto;">
+<div class="container" style="padding:64px 24px;display:flex;justify-content:center;">
+    <div style="width:100%;max-width:560px;">
 
-        <div class="page-title-bar" style="margin-bottom:24px;">
-            <h1 class="page-title">Edit Product</h1>
-            <a href="/dashboard" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <h1 style="font-size:24px;margin:0;">Edit Product</h1>
+            <a href="/dashboard" class="btn btn-outline" style="padding:6px 12px;font-size:14px;">Back to Dashboard</a>
         </div>
 
-        <div class="form-card">
+        <div class="card">
             <form method="POST" enctype="multipart/form-data">
 
                 <div class="form-group">
@@ -38,25 +38,24 @@
                 {% if product.image_url %}
                 <div class="form-group">
                     <label>Current Image</label>
-                    <div style="border-radius:var(--radius-md);overflow:hidden;max-width:180px;border:1.5px solid var(--color-border);">
+                    <div style="border-radius:var(--radius-sm);overflow:hidden;max-width:160px;border:1px solid var(--color-border);">
                         <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width:100%;display:block;">
                     </div>
                 </div>
                 {% endif %}
 
                 <div class="form-group">
-                    <label>Replace Image <span class="text-muted text-sm">(leave empty to keep current)</span></label>
-                    <div class="file-upload-zone">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;color:var(--color-text-muted);">
+                    <label>Replace Image <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></label>
+                    <div style="border:1px dashed var(--color-border);padding:24px;text-align:center;border-radius:var(--radius-sm);background:var(--color-bg-section);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;color:var(--color-text-secondary);">
                             <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
                         </svg>
-                        <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:8px;">Upload a new photo</p>
-                        <input type="file" name="image" accept="image/*">
-                        <p style="font-size:11px;color:var(--color-text-light);margin-top:8px;margin-bottom:0;">JPEG, PNG, WEBP — Max 5MB</p>
+                        <p style="font-size:14px;color:var(--color-text-secondary);margin-bottom:8px;">Upload a new photo</p>
+                        <input type="file" name="image" accept="image/*" style="width:100%;">
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px;padding:12px;">
                     Save Changes
                 </button>
             </form>

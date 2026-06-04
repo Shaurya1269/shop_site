@@ -4,99 +4,73 @@
 
 {% block content %}
 
-<!-- Search Header -->
-<div class="search-header">
-    <div class="search-query-label">Search results for</div>
-    <div class="search-query-title">"<span>{{ query }}</span>"</div>
-</div>
+<div class="container" style="padding:48px 24px;">
 
-<!-- Refine Search -->
-<div style="margin-bottom:28px;">
-    <form action="/search" method="get" class="homepage-search-form" style="max-width:560px;">
-        <input type="text" name="q" value="{{ query }}" class="homepage-search-input" autocomplete="off">
-        <button type="submit" class="homepage-search-btn">Search</button>
-    </form>
-</div>
-
-<!-- Shops Results -->
-<div class="page-section">
-    <div class="section-head">
-        <div class="section-head-left">
-            <div class="section-accent-bar"></div>
-            <h2 class="section-title">Shops</h2>
-            {% if shops %}<span class="section-count">&nbsp;{{ shops|length }} found</span>{% endif %}
-        </div>
+    <!-- Search Header -->
+    <div style="margin-bottom:32px;">
+        <h1 style="font-size:24px;margin-bottom:8px;">Search Results for "{{ query }}"</h1>
+        <form action="/search" method="get" class="nav-search-form" style="max-width:500px;">
+            <input type="text" name="q" value="{{ query }}" class="nav-search-input">
+            <button type="submit" class="nav-search-btn">Search</button>
+        </form>
     </div>
 
-    {% if shops %}
-    <div class="shops-grid">
-        {% for shop in shops %}
-        <div class="shop-card">
-            <div class="shop-card-image">
-                <div class="shop-card-monogram">{{ shop.shop_name[0].upper() }}</div>
-            </div>
-            <div class="shop-card-body">
-                <div class="shop-card-name">{{ shop.shop_name }}</div>
-                <div class="shop-card-desc">Local shop</div>
-            </div>
-            <div class="shop-card-footer">
-                <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop</a>
-            </div>
+    <!-- Shops Results -->
+    <div style="margin-bottom:48px;">
+        <div class="section-header" style="border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:24px;">
+            <h2 class="section-title">Shops ({{ shops|length if shops else 0 }})</h2>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p class="text-muted text-sm">No shops found matching "{{ query }}".</p>
-    {% endif %}
-</div>
 
-<!-- Divider -->
-<div class="results-divider">
-    <div class="results-divider-line"></div>
-    <span class="results-divider-label">Products</span>
-    <div class="results-divider-line"></div>
-</div>
-
-<!-- Product Results -->
-<div class="page-section">
-    <div class="section-head">
-        <div class="section-head-left">
-            <div class="section-accent-bar"></div>
-            <h2 class="section-title">Products</h2>
-            {% if products %}<span class="section-count">&nbsp;{{ products|length }} found</span>{% endif %}
-        </div>
-    </div>
-
-    {% if products %}
-    <div class="products-grid">
-        {% for product in products %}
-        <div class="product-card">
-            <div class="product-img-wrapper">
-                {% if product.image_url %}
-                <img src="{{ product.image_url }}" alt="{{ product.name }}">
-                {% else %}
-                <div class="product-img-placeholder">
-                    <svg class="product-img-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
-                    </svg>
+        {% if shops %}
+        <div class="shop-grid">
+            {% for shop in shops %}
+            <a href="/shop/{{ shop.slug }}" class="shop-card">
+                <div class="shop-banner">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
                 </div>
-                {% endif %}
-            </div>
-            <div class="product-body">
-                <div class="product-name">{{ product.name }}</div>
-                <div class="product-desc text-sm" style="color:var(--color-text-light);">{{ product.shop_name }}</div>
-                <div class="product-price" style="margin-top:auto;padding-top:8px;">&#8377;{{ product.price }}</div>
-                <a href="/shop/{{ product.slug }}" class="btn btn-outline btn-sm btn-block" style="margin-top:8px;">Visit Shop</a>
-            </div>
+                <div class="shop-info">
+                    <div class="shop-name">{{ shop.shop_name }}</div>
+                    <div class="shop-desc">Local business matching your search.</div>
+                    <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
+                </div>
+            </a>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% else %}
+        <p style="color:var(--color-text-secondary);">No shops found matching your search.</p>
+        {% endif %}
     </div>
-    {% else %}
-    <p class="text-muted text-sm">No products found matching "{{ query }}".</p>
-    <div style="margin-top:16px;">
-        <a href="/" class="btn btn-outline">Back to Home</a>
+
+    <!-- Product Results -->
+    <div>
+        <div class="section-header" style="border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:24px;">
+            <h2 class="section-title">Products ({{ products|length if products else 0 }})</h2>
+        </div>
+
+        {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                    {% else %}
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                    {% endif %}
+                </div>
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-shop">{{ product.shop_name }}</div>
+                <div class="product-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
+                
+                <a href="/shop/{{ product.slug }}" class="btn btn-outline btn-block" style="margin-top:auto;padding:10px;">View in Shop</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--color-text-secondary);">No products found matching your search.</p>
+        {% endif %}
     </div>
-    {% endif %}
+
 </div>
 
 {% endblock %}
