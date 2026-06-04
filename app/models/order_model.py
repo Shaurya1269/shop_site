@@ -21,8 +21,8 @@ def create_order(user_id, shop_id, customer_name, phone, address):
     cur  = get_cursor(conn)
 
     cur.execute("""
-        INSERT INTO orders (shop_id, user_id, customer_name, phone, address)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO orders (shop_id, user_id, customer_name, phone, address,status)
+        VALUES (%s, %s, %s, %s, %s,'Pending')
         RETURNING id, created_at
     """, (shop_id, user_id, customer_name, phone, address))
 
@@ -38,7 +38,8 @@ def create_order(user_id, shop_id, customer_name, phone, address):
         'customer_name': customer_name,
         'phone':         phone,
         'address':       address,
-        'created_at':    result['created_at']
+        'created_at':    result['created_at'],
+        'status': 'Pending'
     }
 
 

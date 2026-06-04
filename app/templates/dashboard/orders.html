@@ -1,64 +1,108 @@
 {% extends "base.html" %}
 
-{% block title %}My Orders — Shop Platform{% endblock %}
+{% block title %}Orders — ShopLocal{% endblock %}
 
 {% block content %}
 
-<h2>Your Orders</h2>
+<div class="page-title-bar">
+    <h1 class="page-title">
+        {% if is_shop_owner %}📦 Shop Orders{% else %}🛍️ My Orders{% endif %}
+    </h1>
+    <a href="/dashboard" class="btn btn-secondary btn-sm">← Dashboard</a>
+</div>
 
 {% if orders %}
 {% for order in orders %}
-<div class="order-card"
-    style="border: 1px solid #ddd; margin: 16px 0; padding: 16px; border-radius: 6px; background: #fff;">
-    <h3 style="margin-top:0;">Order #{{ order.id }}</h3>
-    <p><strong>Shop:</strong> {{ order.shop_name }}</p>
-    <p><strong>Customer:</strong> {{ order.customer_name }}</p>
-    <p><strong>Phone:</strong> {{ order.phone }}</p>
-    <p><strong>Address:</strong> {{ order.address }}</p>
-    <p><strong>Date:</strong> {{ order.created_at }}</p>
-    <p><strong>Status:</strong>{{order.status}}</p>
+<div class="order-card">
 
+    <!-- Order Header -->
+    <div class="order-card-header">
+        <span class="order-card-id">Order #{{ order.id }}</span>
+        <span class="badge
+            {% if order.status == 'Pending' %}badge-warning
+            {% elif order.status == 'Accepted' %}badge-info
+            {% elif order.status == 'Shipped' %}badge-shipped
+            {% elif order.status == 'Delivered' %}badge-success
+            {% elif order.status == 'Cancelled' %}badge-danger
+            {% endif %}">
+            {{ order.status }}
+        </span>
+    </div>
 
+    <!-- Order Meta -->
+    <div class="order-card-meta">
+        {% if order.shop_name %}
+        <div class="order-meta-item">
+            <span class="order-meta-label">Shop</span>
+            <span class="order-meta-value">{{ order.shop_name }}</span>
+        </div>
+        {% endif %}
+        <div class="order-meta-item">
+            <span class="order-meta-label">Customer</span>
+            <span class="order-meta-value">{{ order.customer_name }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Phone</span>
+            <span class="order-meta-value">{{ order.phone }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Address</span>
+            <span class="order-meta-value">{{ order.address }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Date</span>
+            <span class="order-meta-value">{{ order.created_at }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Total</span>
+            <span class="order-meta-value text-accent" style="font-weight:700;">₹{{ "%.2f"|format(order.total|float) }}</span>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    {% if order['items'] %}
+    <div class="order-items-list">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--color-text-muted);margin-bottom:8px;">Items</div>
+        {% for item in order['items'] %}
+        <div class="order-item-row">
+            <span>{{ item.product_name }}</span>
+            <span>× {{ item.quantity }}</span>
+            <span style="font-weight:600;color:var(--color-text);">₹{{ "%.2f"|format(item.price|float) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Shop Owner Actions -->
     {% if is_shop_owner %}
-    <div style="margin: 10px 0; display: flex; gap: 10px;">
-        <form action="/update-order-status/{{order.id}}/Accepted" method="post">
-            <button type="submit">Accept Order</button>
+    <div class="order-actions">
+        <form action="/update-order-status/{{ order.id }}/Accepted" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-outline btn-sm">✅ Accept</button>
         </form>
-
-        <form action="/update-order-status/{{order.id}}/Shipped" method="post">
-            <button type="submit">Ship</button>
+        <form action="/update-order-status/{{ order.id }}/Shipped" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-sm" style="background:#F5F3FF;color:#6D28D9;border:1.5px solid #DDD6FE;">🚚 Ship</button>
         </form>
-
-        <form action="/update-order-status/{{order.id}}/Delivered" method="post">
-            <button type="submit">Deliver</button>
+        <form action="/update-order-status/{{ order.id }}/Delivered" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-success btn-sm">📬 Delivered</button>
         </form>
-
-        <form action="/update-order-status/{{order.id}}/Cancelled" method="post">
-            <button type="submit">Cancel</button>
+        <form action="/update-order-status/{{ order.id }}/Cancelled" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm">✕ Cancel</button>
         </form>
     </div>
     {% endif %}
 
-
-    <h4>Order Items:</h4>
-    {% if order['items'] %}
-    <ul>
-        {% for item in order['items'] %}
-        <li>
-            {{ item.product_name }}
-            — Qty: {{ item.quantity }}
-            — ₹{{ "%.2f" | format(item.price | float) }}
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p style="color:#888;">No items found for this order.</p>
-    {% endif %}
 </div>
 {% endfor %}
+
 {% else %}
-<p>No orders found.</p>
-<a href="/">Browse shops</a>
+<div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <h3 class="empty-state-title">No Orders Found</h3>
+    <p class="empty-state-text">
+        {% if is_shop_owner %}You haven't received any orders yet.{% else %}You haven't placed any orders yet.{% endif %}
+    </p>
+    <a href="/" class="btn btn-primary">Browse Shops</a>
+</div>
 {% endif %}
 
 {% endblock %}

@@ -41,6 +41,7 @@ def my_orders():
             items = cur.fetchall()
             order_dict = dict(order)
             order_dict['items'] = [dict(i) for i in items]
+            order_dict['total'] = sum(float(i['price']) * i['quantity'] for i in items)
             orders_list.append(order_dict)
 
         cur.close()

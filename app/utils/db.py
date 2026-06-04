@@ -24,7 +24,8 @@ def get_db():
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
 
-    conn = psycopg2.connect(url)
+    # Add connect_timeout so we fail fast if DB is unreachable instead of hanging
+    conn = psycopg2.connect(url, connect_timeout=10)
     return conn
 
 

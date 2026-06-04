@@ -13,43 +13,52 @@ shop_bp = Blueprint('shop', __name__)
 
 @shop_bp.route("/")
 def home():
-    conn = get_db()
-    cur = get_cursor(conn)
-    cur.execute("SELECT shop_name, slug FROM shops")
-    shops = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template("index.html", shops=shops)
+    try:
+        conn = get_db()
+        cur = get_cursor(conn)
+        cur.execute("SELECT shop_name, slug FROM shops")
+        shops = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template("index.html", shops=shops)
+    except Exception as e:
+        logger.error(f"[home] DB error: {e}")
+        return render_template("index.html", shops=[], db_error=True)
 
 
 @shop_bp.route("/search")
 def search():
     query = request.args.get("q", "").strip()
-    conn = get_db()
-    cur = get_cursor(conn)
+    try:
+        conn = get_db()
+        cur = get_cursor(conn)
 
-    shops = []
-    products = []
+        shops = []
+        products = []
 
-    if query:
-        cur.execute("""
-            SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
-        """, (f"%{query}%",))
-        shops = cur.fetchall()
+        if query:
+            cur.execute("""
+                SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
+            """, (f"%{query}%",))
+            shops = cur.fetchall()
 
-        cur.execute("""
-            SELECT products.name,
-                   products.price,
-                   shops.shop_name,
-                   shops.slug
-            FROM products
-            JOIN shops ON products.shop_id = shops.id
-            WHERE products.name ILIKE %s
-        """, (f"%{query}%",))
-        products = cur.fetchall()
+            cur.execute("""
+                SELECT products.name,
+                       products.price,
+                       shops.shop_name,
+                       shops.slug
+                FROM products
+                JOIN shops ON products.shop_id = shops.id
+                WHERE products.name ILIKE %s
+            """, (f"%{query}%",))
+            products = cur.fetchall()
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logger.error(f"[search] DB error: {e}")
+        shops = []
+        products = []
 
     return render_template(
         "search_results.html",
@@ -112,14 +121,29 @@ def dashboard():
     shop = cur.fetchone()
 
     products = []
+    orders = []
     if shop:
         cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
         products = cur.fetchall()
 
+        # Fetch recent orders for this shop with computed totals
+        cur.execute("""
+            SELECT orders.id, orders.user_id, orders.customer_name, orders.phone,
+                   orders.address, orders.status, orders.created_at,
+                   COALESCE(SUM(order_items.quantity * order_items.price), 0) AS total
+            FROM orders
+            LEFT JOIN order_items ON order_items.order_id = orders.id
+            WHERE orders.shop_id = %s
+            GROUP BY orders.id
+            ORDER BY orders.created_at DESC
+            LIMIT 10
+        """, (shop['id'],))
+        orders = cur.fetchall()
+
     cur.close()
     conn.close()
 
-    return render_template('dashboard/dashboard.html', shop=shop, products=products)
+    return render_template('dashboard/dashboard.html', shop=shop, products=products, orders=orders)
 
 
 @shop_bp.route('/create-shop', methods=['GET', 'POST'])
@@ -583,6 +607,7 @@ def orders():
         items = cur.fetchall()
         order_dict = dict(order)
         order_dict['items'] = [dict(i) for i in items]
+        order_dict['total'] = sum(float(i['price']) * i['quantity'] for i in items)
         orders_list.append(order_dict)
 
     cur.close()

@@ -90,19 +90,19 @@ def _run_schema():
         END $$;
     """)
 
-    # ── Migration 2: ensure status column exists on orders ───────
+    # migration 2: ensure status column exists or orders
     cur.execute("""
-        DO $$
-        BEGIN
-            IF NOT EXISTS (
-                SELECT 1 FROM information_schema.columns
-                WHERE table_name = 'orders' AND column_name = 'status'
-            ) THEN
-                ALTER TABLE orders 
-                    ADD COLUMN status VARCHAR(20) DEFAULT 'Pending';
-            END IF;
-        END $$;
-    """)
+    Do $$
+    begin
+    if not exists(
+    select 1 from information_schema.columns
+    where table_name='orders' and column_name='status')
+then
+    alter table orders add column status varchar(20) default 'pending';
+    end if;
+    end $$; """
+    )
+
 
     conn.commit()
     cur.close()

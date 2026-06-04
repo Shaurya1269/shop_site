@@ -1,85 +1,122 @@
 {% extends "base.html" %}
 
-{% block title %}Shop Platform - Home{% endblock %}
+{% block title %}ShopLocal — Discover Local Shops & Products{% endblock %}
 
 {% block content %}
 
-<h2>Welcome to My Shop Platform</h2>
-
-<p>Browse shops and discover great products!</p>
-
-<form action="/search" method="get">
-  <input type="text" name="q" placeholder="Search shops or products..." required>
-  <button type="submit">Search</button>
-</form>
-
-
-{% if session.get('user_id') %}
-<a href="/dashboard">Go to Dashboard</a> |
-<a href="/cart">View Cart</a>
-{% else %}
-<a href="/register">Create your shop</a> |
-<a href="/login">Login</a>
-{% endif %}
-
-<hr>
-
-<h3>Available Shops</h3>
-
-{% if shops %}
-<div class="shops-grid">
-  {% for shop in shops %}
-  <div class="shop-card">
-    <h4><a href="/shop/{{ shop.slug }}">{{ shop.shop_name }}</a></h4>
-    <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
-  </div>
-  {% endfor %}
+{% if db_error %}
+<div class="flash flash-danger" style="margin-bottom:24px;">
+    ⚠️ <strong>Database Unavailable:</strong> Could not connect to the database. 
+    If you're running locally, check that your <code>DATABASE_URL</code> in <code>.env</code> is the <strong>External</strong> URL from your Render database settings (not the Internal URL).
 </div>
-{% else %}
-<p>No shops available yet. <a href="/register">Be the first to create one!</a></p>
 {% endif %}
 
-<style>
-  .shops-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-  }
+<!-- ===== Hero Section ===== -->
+<section class="hero">
+    <div class="hero-eyebrow">🌟 Local Marketplace</div>
+    <h1 class="hero-title">Find Your Favourite<br><span>Local Shops</span></h1>
+    <p class="hero-subtitle">Browse handpicked local businesses and discover products you'll love — all in one place.</p>
 
-  .shop-card {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 8px;
-    background: #fff;
-  }
+    <div class="hero-search">
+        <form action="/search" method="get" class="hero-search-form">
+            <input type="text" name="q" placeholder="Search for shops, bakery, fashion, electronics…" class="hero-search-input" autocomplete="off">
+            <button type="submit" class="hero-search-btn">Search →</button>
+        </form>
+    </div>
 
-  .shop-card h4 {
-    margin: 0 0 10px 0;
-  }
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="hero-stat-number">{{ shops|length if shops else '0' }}+</div>
+            <p class="hero-stat-label">Active Shops</p>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-number">100%</div>
+            <p class="hero-stat-label">Local Businesses</p>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-number">Free</div>
+            <p class="hero-stat-label">To Browse</p>
+        </div>
+    </div>
+</section>
 
-  .shop-card a {
-    color: #007bff;
-    text-decoration: none;
-  }
+<!-- ===== Featured Categories ===== -->
+<section class="categories-section">
+    <div class="section-header">
+        <h2 class="section-title">Browse by Category</h2>
+    </div>
+    <div class="categories-scroll">
+        <a href="/search?q=bakery" class="category-chip">
+            <span class="category-chip-icon">🥐</span>
+            <span class="category-chip-label">Bakery</span>
+        </a>
+        <a href="/search?q=supplements" class="category-chip">
+            <span class="category-chip-icon">💊</span>
+            <span class="category-chip-label">Supplements</span>
+        </a>
+        <a href="/search?q=fashion" class="category-chip">
+            <span class="category-chip-icon">👗</span>
+            <span class="category-chip-label">Fashion</span>
+        </a>
+        <a href="/search?q=gifts" class="category-chip">
+            <span class="category-chip-icon">🎁</span>
+            <span class="category-chip-label">Gifts</span>
+        </a>
+        <a href="/search?q=electronics" class="category-chip">
+            <span class="category-chip-icon">📱</span>
+            <span class="category-chip-label">Electronics</span>
+        </a>
+        <a href="/search?q=food" class="category-chip">
+            <span class="category-chip-icon">🍱</span>
+            <span class="category-chip-label">Food</span>
+        </a>
+        <a href="/search?q=beauty" class="category-chip">
+            <span class="category-chip-icon">💄</span>
+            <span class="category-chip-label">Beauty</span>
+        </a>
+        <a href="/search?q=sports" class="category-chip">
+            <span class="category-chip-icon">⚽</span>
+            <span class="category-chip-label">Sports</span>
+        </a>
+        <a href="/search?q=stationery" class="category-chip">
+            <span class="category-chip-icon">📓</span>
+            <span class="category-chip-label">Stationery</span>
+        </a>
+        <a href="/search?q=home" class="category-chip">
+            <span class="category-chip-icon">🏠</span>
+            <span class="category-chip-label">Home & Living</span>
+        </a>
+    </div>
+</section>
 
-  .shop-card a:hover {
-    text-decoration: underline;
-  }
+<!-- ===== Available Shops ===== -->
+<section>
+    <div class="section-header">
+        <h2 class="section-title">Available Shops</h2>
+        {% if shops %}
+        <span class="section-subtitle">{{ shops|length }} shop{{ 's' if shops|length != 1 }}</span>
+        {% endif %}
+    </div>
 
-  .visit-btn {
-    display: inline-block;
-    padding: 6px 14px;
-    background-color: #007bff;
-    color: white !important;
-    border-radius: 4px;
-    text-decoration: none !important;
-    font-size: 14px;
-  }
-
-  .visit-btn:hover {
-    background-color: #0056b3;
-  }
-</style>
+    {% if shops %}
+    <div class="shops-grid">
+        {% for shop in shops %}
+        <div class="shop-card">
+            <div class="shop-avatar">{{ shop.shop_name[0].upper() }}</div>
+            <h4 class="shop-card-name">{{ shop.shop_name }}</h4>
+            <p class="shop-card-meta">Local Shop</p>
+            <a href="/shop/{{ shop.slug }}" class="visit-btn">Visit Shop →</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏪</div>
+        <h3 class="empty-state-title">No Shops Yet</h3>
+        <p class="empty-state-text">Be the very first to create a shop and start selling!</p>
+        <a href="/register" class="btn btn-primary">Create Your Shop</a>
+    </div>
+    {% endif %}
+</section>
 
 {% endblock %}

@@ -1,41 +1,117 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - Shop Platform{% endblock %}
+{% block title %}Dashboard — ShopLocal{% endblock %}
 
 {% block content %}
 
-<h2>Dashboard</h2>
+<!-- ===== Dashboard Header ===== -->
+<div class="dashboard-header">
+    <h1 class="page-title">📊 Dashboard</h1>
+    <p class="text-muted">Manage your shop, products, and orders.</p>
+</div>
 
-{% if shop %}
-    <h3>Your Shop: {{ shop.shop_name }}</h3>
-    <p>Public URL: <a href="/shop/{{ shop.slug }}">/shop/{{ shop.slug }}</a></p>
+<!-- ===== Quick Nav Tiles ===== -->
+<div class="dashboard-nav-grid">
+    <a href="/add-product" class="dashboard-nav-tile">
+        <div class="dashboard-nav-icon">➕</div>
+        <div class="dashboard-nav-label">Add Product</div>
+    </a>
+    <a href="/orders" class="dashboard-nav-tile">
+        <div class="dashboard-nav-icon">📦</div>
+        <div class="dashboard-nav-label">Shop Orders</div>
+    </a>
+    <a href="/my-orders" class="dashboard-nav-tile">
+        <div class="dashboard-nav-icon">🛍️</div>
+        <div class="dashboard-nav-label">My Orders</div>
+    </a>
+    <a href="/cart" class="dashboard-nav-tile">
+        <div class="dashboard-nav-icon">🛒</div>
+        <div class="dashboard-nav-label">Cart</div>
+    </a>
+    <a href="/" class="dashboard-nav-tile">
+        <div class="dashboard-nav-icon">🏠</div>
+        <div class="dashboard-nav-label">Home</div>
+    </a>
+</div>
 
-    <a href="/add-product">Add Product</a> |
-    <a href="/orders">View Orders</a>
+<!-- ===== Products Section ===== -->
+<div class="section-header" style="margin-bottom:16px;">
+    <h2 class="section-title">My Products</h2>
+    <a href="/add-product" class="btn btn-primary btn-sm">+ Add Product</a>
+</div>
 
-    {% if products %}
-        <h4>Your Products ({{ products|length }})</h4>
-        {% for product in products %}
-        <div style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:5px;">
-            {% if product.image_url %}
-                <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width: 150px; display: block; margin-bottom: 10px;">
-            {% endif %}
-            <strong>{{ product.name }}</strong> — ₹{{ "%.2f"|format(product.price) }}
-            <p>{{ product.description }}</p>
-            <br>
-            <a href="/product/{{ product.id }}/edit">Edit</a> |
-            <form action="/product/{{ product.id }}/delete" method="POST" style="display:inline;">
-                <button type="submit" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
-            </form>
+{% if products %}
+<div class="dashboard-products-grid">
+    {% for product in products %}
+    <div class="dashboard-product-card">
+
+        {% if product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="dashboard-product-img">
+        {% else %}
+        <div class="dashboard-product-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--color-bg-muted);">🛍️</div>
+        {% endif %}
+
+        <div class="dashboard-product-body">
+            <div class="dashboard-product-name">{{ product.name }}</div>
+            <div class="dashboard-product-price">₹{{ product.price }}</div>
+            <div class="dashboard-product-actions">
+                <a href="/product/{{ product.id }}/edit" class="btn btn-outline btn-sm">✏️ Edit</a>
+                <form action="/product/{{ product.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete this product?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                </form>
+            </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No products yet. <a href="/add-product">Add your first product</a></p>
-    {% endif %}
-
+    </div>
+    {% endfor %}
+</div>
 {% else %}
-    <p>You don't have a shop yet.</p>
-    <a href="/create-shop">Create Shop</a>
+<div class="empty-state" style="padding:48px 24px;margin-bottom:40px;">
+    <div class="empty-state-icon">📦</div>
+    <h3 class="empty-state-title">No Products Yet</h3>
+    <p class="empty-state-text">Add your first product to start selling.</p>
+    <a href="/add-product" class="btn btn-primary">Add Your First Product</a>
+</div>
+{% endif %}
+
+<!-- ===== Orders Section ===== -->
+<div class="section-header" style="margin-top:48px;margin-bottom:20px;">
+    <h2 class="section-title">Recent Orders</h2>
+    <a href="/orders" class="btn btn-outline btn-sm">View All</a>
+</div>
+
+{% if orders %}
+{% for order in orders %}
+<div class="order-card">
+    <div class="order-card-header">
+        <span class="order-card-id">Order #{{ order.id }}</span>
+        <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
+    </div>
+
+    <div class="order-card-meta">
+        <div class="order-meta-item">
+            <span class="order-meta-label">Customer</span>
+            <span class="order-meta-value">{{ order.user_id }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Phone</span>
+            <span class="order-meta-value">{{ order.phone }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Address</span>
+            <span class="order-meta-value">{{ order.address }}</span>
+        </div>
+        <div class="order-meta-item">
+            <span class="order-meta-label">Total</span>
+            <span class="order-meta-value text-accent" style="font-weight:700;">₹{{ order.total }}</span>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state" style="padding:40px 24px;">
+    <div class="empty-state-icon">📋</div>
+    <p class="empty-state-text">No orders received yet.</p>
+</div>
 {% endif %}
 
 {% endblock %}
