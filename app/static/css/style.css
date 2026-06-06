@@ -54,9 +54,8 @@ html {
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: linear-gradient(135deg, #121212 0%, #1a1a2e 100%); /* Since we need light text and no purple gradient on white, let's use a dark aesthetic, but the user only mentioned "DO NOT: Use purple gradients on white". Wait, the navbar is frosted with light text. If body is white, #ccc text on navbar might be okay, but a dark or vibrant background fits better for a glass island. Let's just adjust the body background to not be purple gradient on white. I'll make it a sleek dark gradient or solid dark since the glass is whiteish. Actually, just a dark bluish background. */
-  background: #0f172a;
-  color: #f1f5f9;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #e0f2fe 100%); /* Ombre effect from almost white to pale to bluish, vibrant and happy */
+  color: #1e293b; /* Dark text for visibility on light background */
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -142,7 +141,7 @@ p {
   font-family: 'Outfit', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: #0f172a; /* Dark for visibility */
   letter-spacing: -0.5px;
   flex-shrink: 0;
   display: flex;
@@ -161,7 +160,7 @@ p {
 
 .nav-search-form {
   display: flex;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.4); /* Make it slightly more opaque since background is light */
   border-radius: 30px;
   overflow: hidden;
   transition: all var(--transition);
@@ -175,32 +174,34 @@ p {
   box-shadow: 0 0 15px rgba(0, 191, 255, 0.4); /* Blue glow when in use */
 }
 
+input[type="text"].nav-search-input,
 .nav-search-input {
   flex: 1;
-  border: none;
-  background: transparent;
+  border: none !important; /* Force override of the global border */
+  background: transparent !important;
   padding: 10px 16px;
   font-size: 14px;
-  color: #fff;
+  color: #0f172a; /* Dark text */
   outline: none;
 }
+input[type="text"].nav-search-input::placeholder,
 .nav-search-input::placeholder {
-  color: #aaa;
+  color: #64748b;
 }
 
 .nav-search-btn {
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   padding: 0 16px;
   cursor: pointer;
-  color: #ccc;
+  color: #475569;
   display: flex;
   align-items: center;
   transition: color var(--transition);
 }
 
 .nav-search-btn:hover {
-  color: #fff;
+  color: #0ea5e9;
 }
 
 .nav-links {
@@ -213,7 +214,7 @@ p {
 .nav-link {
   font-size: 14px;
   font-weight: 500;
-  color: #ccc;
+  color: #475569; /* Dark grey for visibility */
   display: flex;
   align-items: center;
   gap: 6px;
@@ -222,8 +223,8 @@ p {
 }
 
 .nav-link:hover {
-  color: #fff;
-  text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+  color: #0ea5e9; /* Vivid blue on hover */
+  text-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
 }
 
 .nav-icon {
