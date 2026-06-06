@@ -6,19 +6,18 @@ from dotenv import load_dotenv
 import cloudinary
 
 
-cloudinary.config(
-    cloud_name=os.get("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.environ("CLOUDINARY_API_KEY"),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-    secure=True
-)
-
-
 def create_app():
     app = Flask(__name__)
 
     # Load environment variables
     load_dotenv()
+
+    cloudinary.config(
+        cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.environ.get("CLOUDINARY_API_KEY"),
+        api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+        secure=True
+    )
 
     # Use SECRET_KEY from env; fall back to a random key (invalidates sessions on restart)
     # For persistent sessions across restarts, always set SECRET_KEY in .env
