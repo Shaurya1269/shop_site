@@ -2,33 +2,65 @@
 
 {% block content %}
 
-
-
-<!-- Shops Section -->
-<div class="section-bg">
-    <div class="container">
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container hero-container">
+        <!-- Floating App Icon -->
+        <div class="hero-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+        </div>
         
-        <!-- Featured Shops -->
-        <div class="section-header">
-            <h2 class="section-title">Discover Shops</h2>
-            <a href="/search?q=" class="section-link">View All &rarr;</a>
+        <h1 class="hero-title">Discover real-world<br>design inspiration.</h1>
+        <p class="hero-subtitle">Featuring over 1,000+ products, curated weekly.</p>
+        
+        <div class="hero-ctas">
+            <a href="#" class="btn-cta btn-solid">Join for free</a>
+            <a href="#" class="btn-cta btn-outline-cta">See our plans &rarr;</a>
         </div>
 
+        <!-- Search Bar -->
+        <div class="hero-search-wrapper">
+            <form action="/search" method="get" class="hero-search-form">
+                <div class="search-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <input type="text" name="q" placeholder="Search apps, flows, UI patterns…" class="hero-search-input" autocomplete="off">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content — Shops / Cards Grid -->
+<div class="section-bg cards-section">
+    <div class="container">
+        <h2 class="section-title text-center">Search the way you think.</h2>
+
         {% if shops %}
-        <div class="shop-grid">
+        <div class="mobbin-grid">
             {% for shop in shops %}
-            <a href="/shop/{{ shop.slug }}" class="shop-card">
-                <div class="shop-banner">
-                    <!-- Placeholder Banner Image using SVG -->
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            <a href="/shop/{{ shop.slug }}" class="mobbin-card">
+                <div class="mobbin-card-img">
+                    <!-- Placeholder image area (dark gray fill) -->
+                    <div class="placeholder-img"></div>
                 </div>
-                <div class="shop-info">
-                    <div class="shop-name">{{ shop.shop_name }}</div>
-                    <div class="shop-desc">Browse products and offers from {{ shop.shop_name }}. Top rated local business.</div>
-                    <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
-                </div>
+                <div class="mobbin-card-label">By {{ shop.shop_name }}</div>
             </a>
             {% endfor %}
+            <!-- Add a few placeholder cards to match 3-column asymmetry if needed -->
+            <a href="#" class="mobbin-card">
+                <div class="mobbin-card-img"><div class="placeholder-img" style="background:#2a2a2a;"></div></div>
+                <div class="mobbin-card-label">By color</div>
+            </a>
+            <a href="#" class="mobbin-card">
+                <div class="mobbin-card-img"><div class="placeholder-img" style="background:#333;"></div></div>
+                <div class="mobbin-card-label">By visual similarity</div>
+            </a>
+            <a href="#" class="mobbin-card">
+                <div class="mobbin-card-img"><div class="placeholder-img" style="background:#1f1f1f;"></div></div>
+                <div class="mobbin-card-label">Without AI</div>
+            </a>
         </div>
         {% else %}
         <div class="empty-state">
@@ -37,6 +69,49 @@
         </div>
         {% endif %}
 
+        <!-- Wide 2-column feature row -->
+        <div class="feature-row">
+            <div class="feature-text">
+                <h2>Know what<br>you're<br>looking at.</h2>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-img">
+                    <div class="placeholder-img" style="background:#222;"></div>
+                </div>
+                <div class="feature-card-caption">Antigravity Agent researches images—surfacing the artist, source, and story.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Sections -->
+<div class="trusted-section">
+    <div class="container">
+        <div class="trusted-strip">
+            <div class="trusted-logo">Logo 1</div>
+            <div class="trusted-logo">Logo 2</div>
+            <div class="trusted-logo">Logo 3</div>
+            <div class="trusted-logo">Logo 4</div>
+            <div class="trusted-logo">Logo 5</div>
+        </div>
+        
+        <div class="highlight-cards">
+            <div class="highlight-card">
+                <div class="hc-icon">⚡</div>
+                <h3 class="hc-title">Lightning Fast</h3>
+                <p class="hc-desc">Find exactly what you need in milliseconds.</p>
+            </div>
+            <div class="highlight-card">
+                <div class="hc-icon">✨</div>
+                <h3 class="hc-title">AI Curated</h3>
+                <p class="hc-desc">Only the best designs, filtered by AI.</p>
+            </div>
+            <div class="highlight-card">
+                <div class="hc-icon">🔒</div>
+                <h3 class="hc-title">Secure & Private</h3>
+                <p class="hc-desc">Your searches and data are always protected.</p>
+            </div>
+        </div>
     </div>
 </div>
 
