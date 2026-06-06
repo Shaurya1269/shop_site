@@ -1,3 +1,4 @@
+import cloudinary
 import logging
 import traceback
 from flask import Blueprint, render_template, session, redirect, request, flash
@@ -45,6 +46,7 @@ def search():
             cur.execute("""
                 SELECT products.name,
                        products.price,
+                       products.image_url,
                        shops.shop_name,
                        shops.slug
                 FROM products
@@ -222,11 +224,18 @@ def add_product():
             conn.close()
             return "Price and stock must be numbers", 400
 
-        image_url = request.form.get("image_url")
         
+        if "image" in request.files and request.files['image'].filename !="":
+            file=request.files["image"]
+            # upload to cloudniary 
+            result= cloudinary.uploader.upload(
+                file,
+                folder="products",
+            )
+            image_url=result.get("secure_url")
 
         cur.execute(
-            """INSERT INTO products (shop_id, name, price, description, stock, image_url)
+            """INSERT INTO products (shop_id, name, price, description, stock, image_url) 
                VALUES (%s, %s, %s, %s, %s, %s)""",
             (shop_id, name, price, description, stock, image_url)
         )
