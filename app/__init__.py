@@ -3,6 +3,15 @@ import os
 import secrets
 import logging
 from dotenv import load_dotenv
+import cloudinary
+
+
+cloudinary.config(
+    cloud_name=os.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 
 def create_app():
