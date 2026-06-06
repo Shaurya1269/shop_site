@@ -1,43 +1,107 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="hero-section anim-fade-slide anim-delay-1">
+    <div class="hero-icon-wrapper">
+        <svg class="hero-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="12" fill="#3B8BFF"/>
+            <path d="M11 20L20 13L29 20L20 27L11 20Z" fill="white"/>
+            <path d="M11 20L20 27L29 20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+    <h1 class="hero-title">Discover real-world<br>design inspiration.</h1>
+    <p class="hero-subtitle">Featuring over 1,000+ products, curated weekly.</p>
+    <div class="hero-actions">
+        <a href="/register" class="btn btn-black-pill">Join for free</a>
+        <a href="/pricing" class="btn btn-outline-pill">See our plans &rarr;</a>
+    </div>
 
-
-
-<!-- Shops Section -->
-<div class="section-bg">
-    <div class="container">
-        
-        <!-- Featured Shops -->
-        <div class="section-header">
-            <h2 class="section-title">Discover Shops</h2>
-            <a href="/search?q=" class="section-link">View All &rarr;</a>
-        </div>
-
-        {% if shops %}
-        <div class="shop-grid">
-            {% for shop in shops %}
-            <a href="/shop/{{ shop.slug }}" class="shop-card">
-                <div class="shop-banner">
-                    <!-- Placeholder Banner Image using SVG -->
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-                </div>
-                <div class="shop-info">
-                    <div class="shop-name">{{ shop.shop_name }}</div>
-                    <div class="shop-desc">Browse products and offers from {{ shop.shop_name }}. Top rated local business.</div>
-                    <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <h3>No shops found</h3>
-            <p>We couldn't find any shops right now. Please check back later.</p>
-        </div>
-        {% endif %}
-
+    <!-- Search Bar -->
+    <div class="hero-search-wrapper anim-fade-slide anim-delay-2">
+        <form action="/search" method="get" class="hero-search-form">
+            <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" name="q" placeholder="Search apps, flows, UI patterns…" class="hero-search-input" autocomplete="off">
+        </form>
     </div>
 </div>
 
+<div class="container section anim-fade-slide anim-delay-3">
+    <div class="text-center mb-48">
+        <h2 class="section-title text-center">Search the way you think.</h2>
+    </div>
+
+    <!-- 3-Column Asymmetric Grid -->
+    <div class="masonry-grid">
+        <div class="masonry-col">
+            <div class="glass-card">
+                <div class="glass-card-img" style="background-color: #1f1f1f; aspect-ratio: 3/4;"></div>
+                <div class="glass-card-label">By color</div>
+            </div>
+        </div>
+        <div class="masonry-col" style="padding-top: 40px;">
+            <div class="glass-card">
+                <div class="glass-card-img" style="background-color: #1f1f1f; aspect-ratio: 3/4;"></div>
+                <div class="glass-card-label">By visual similarity</div>
+            </div>
+        </div>
+        <div class="masonry-col" style="padding-top: 20px;">
+            <div class="glass-card">
+                <div class="glass-card-img" style="background-color: #1f1f1f; aspect-ratio: 3/4;"></div>
+                <div class="glass-card-label">Without AI</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2-Column Feature Row -->
+<div class="container section feature-row anim-fade-slide anim-delay-4">
+    <div class="feature-text">
+        <h2>Know what<br>you're<br>looking at.</h2>
+    </div>
+    <div class="feature-card-wrapper">
+        <div class="glass-card tall-card">
+            <div class="glass-card-img" style="background-color: #1a1a1a; aspect-ratio: 9/16;"></div>
+            <div class="glass-card-caption">Cosmos researches images—surfacing the artist, source, and story.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Trusted By Strip -->
+<div class="container section trusted-by anim-fade-slide anim-delay-5">
+    <p class="muted-label text-center" style="color: var(--color-text-secondary); text-align: center; margin-bottom: 24px;">Trusted by world-class teams</p>
+    <div class="trusted-logos">
+        <div class="logo-placeholder"></div>
+        <div class="logo-placeholder"></div>
+        <div class="logo-placeholder"></div>
+        <div class="logo-placeholder"></div>
+        <div class="logo-placeholder"></div>
+    </div>
+</div>
+
+<!-- Features Row -->
+<div class="container section features-highlight anim-fade-slide anim-delay-6">
+    <div class="feature-highlight-grid">
+        <div class="glass-card feature-highlight-card">
+            <div class="fh-icon teal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3>Curated Quality</h3>
+            <p>Every product is hand-picked to ensure only top-tier designs make it into our gallery.</p>
+        </div>
+        <div class="glass-card feature-highlight-card">
+            <div class="fh-icon blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Daily Updates</h3>
+            <p>We add new flows and screens every single day so you never run out of inspiration.</p>
+        </div>
+        <div class="glass-card feature-highlight-card">
+            <div class="fh-icon pink">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+            </div>
+            <h3>Deep Search</h3>
+            <p>Filter by element, color, typography, or platform to find exactly what you need.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}

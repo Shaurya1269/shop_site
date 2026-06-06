@@ -9,75 +9,44 @@
 <body>
 
     <!-- ===== Navigation ===== -->
-    <nav class="navbar">
-        <div class="navbar-inner">
-            
+    <div class="navbar-wrapper">
+        <nav class="navbar">
             <!-- Logo -->
             <a href="/" class="nav-logo">
-                Shop<span>Local</span>
+                <div class="nav-logo-icon"></div>
+                Antigravity Agent
             </a>
-
-            <!-- Center Search Bar -->
-            <div class="nav-search">
-                <form action="/search" method="get" class="nav-search-form">
-                    <input type="text" name="q" placeholder="Search for products, brands and more" class="nav-search-input" autocomplete="off">
-                    <button type="submit" class="nav-search-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
-                </form>
-            </div>
 
             <!-- Right Links -->
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/search?q=" class="nav-link">Shops</a>
-                <a href="/cart" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                    Cart
-                </a>
-                
+                <a href="#" class="nav-link">Pricing</a>
+                <a href="#" class="nav-link">Awards</a>
                 {% if session.get('user_id') %}
-                <a href="/dashboard" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Dashboard
-                </a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/auth/logout" class="nav-link" style="color:var(--color-text-secondary);font-size:14px;">Logout</a>
                 {% else %}
-                <a href="/login" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                    Login
-                </a>
+                <a href="/login" class="nav-link">Log in</a>
                 {% endif %}
             </div>
 
             <!-- Mobile Hamburger -->
-            <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" style="pointer-events: auto;">
                 <span></span><span></span><span></span>
             </button>
-        </div>
+        </nav>
+    </div>
 
-        <!-- Mobile Nav -->
-        <div class="mobile-nav" id="mobile-nav">
-            <div style="margin-bottom:16px;">
-                <form action="/search" method="get" class="nav-search-form">
-                    <input type="text" name="q" placeholder="Search..." class="nav-search-input">
-                    <button type="submit" class="nav-search-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
-                </form>
-            </div>
-            <a href="/">Home</a>
-            <a href="/search?q=">All Shops</a>
-            <a href="/cart">Cart</a>
-            {% if session.get('user_id') %}
-            <a href="/dashboard">Dashboard</a>
-            <a href="/auth/logout">Logout</a>
-            {% else %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-            {% endif %}
-        </div>
-    </nav>
+    <!-- Mobile Nav -->
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="#">Pricing</a>
+        <a href="#">Awards</a>
+        {% if session.get('user_id') %}
+        <a href="/dashboard">Dashboard</a>
+        <a href="/auth/logout">Logout</a>
+        {% else %}
+        <a href="/login">Log in</a>
+        {% endif %}
+    </div>
 
     <!-- Content -->
     <main style="min-height: calc(100vh - 160px);">
@@ -103,9 +72,9 @@
     </main>
 
     <!-- Footer -->
-    <footer style="background:var(--color-bg-section); border-top:1px solid var(--color-border); padding: 32px 0; text-align:center; color:var(--color-text-secondary); font-size:14px; margin-top:48px;">
+    <footer style="padding: 64px 0 32px; text-align:center; color:var(--color-text-secondary); font-size:14px; margin-top:48px;">
         <div class="container">
-            <p>&copy; 2026 ShopLocal Marketplace. All rights reserved.</p>
+            <p>&copy; 2025 Antigravity Agent</p>
         </div>
     </footer>
 
