@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Shop Settings</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <label>Shop Name</label><br>
+    <input type="text" name="shop_name" value="{{ shop.shop_name }}" required>
+    <br><br>
+
+    <label>Description</label><br>
+    <textarea name="description" rows="4">{{ shop.description or "" }}</textarea>
+
+    <br><br>
+
+    <label>Shop Banner</label><br>
+
+    {% if shop.banner_url %}
+    <img src="{{ shop.banner_url }}" width="350" style="border-radius:12px;margin-bottom:10px;">
+    <br>
+    {% endif %}
+
+    <input type="file" name="banner" accept="image/*">
+
+    <br><br>
+
+    <label>Shop Logo (Optional)</label><br>
+
+    {% if shop.logo_url %}
+    <img src="{{ shop.logo_url }}" width="100" style="border-radius:50%;margin-bottom:10px;">
+    <br>
+    {% endif %}
+
+    <input type="file" name="logo" accept="image/*">
+
+    <br><br>
+
+    <button type="submit">
+        Save Changes
+    </button>
+
+</form>
+
+{% endblock %}

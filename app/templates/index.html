@@ -7,7 +7,7 @@
 <!-- Shops Section -->
 <div class="section-bg">
     <div class="container">
-        
+
         <!-- Featured Shops -->
         <div class="section-header">
             <h2 class="section-title">Discover Shops</h2>
@@ -18,13 +18,45 @@
         <div class="shop-grid">
             {% for shop in shops %}
             <a href="/shop/{{ shop.slug }}" class="shop-card">
+
                 <div class="shop-banner">
-                    <!-- Placeholder Banner Image using SVG -->
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                    {% if shop.banner_url %}
+                    <img src="{{shop.banner_url}}" alt="{{shop.shop_name}}" style="
+                width:100%;
+                height:100%;
+                object-fit:cover;
+            ">
+                    {% else %}
+                    <div style="width:100%;
+            height:100%;
+            background:linear-gradient(
+                135deg,
+                #F7FBFF,
+                #DDEEFF
+            );"></div>
+                    {% endif %}
                 </div>
+
+
                 <div class="shop-info">
+                    {% if shop.logo_url %}
+
+                    <img src="{{ shop.logo_url }}" alt="{{ shop.shop_name }}" style="
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        object-fit:cover;
+        margin-bottom:14px;
+    ">
+
+                    {% endif %}
                     <div class="shop-name">{{ shop.shop_name }}</div>
-                    <div class="shop-desc">Browse products and offers from {{ shop.shop_name }}. Top rated local business.</div>
+
+                    <div class="shop-desc"> {% if shop.description %}
+                        {{ shop.description }}
+                        {% else %}
+                        Browse products from {{ shop.shop_name }}
+                        {% endif %}</div>
                     <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
                 </div>
             </a>

@@ -111,6 +111,43 @@ then
     end $$; """
     )
 
+    cur.execute("""
+    do $$
+    begin
+
+    if not exists(
+    select 1
+    from information_schema.columns
+    where table_name='shops'
+    and column_name='description'
+    )then   
+    alter table shops
+    add column description text;
+    end if;
+
+    if not exists(
+    select 1
+    from information_schema.columns
+    where table_name='shops'
+    and column_name='logo_url'
+    )then
+    alter table shops
+    add column logo_url text;
+    end if;
+
+    if not exists(
+    select 1
+    from information_schema.columns
+    where table_name='shops'
+    and column_name='banner_url'
+    )then
+    alter table shops
+    add column banner_url text;
+    end if;
+end $$;
+    """)
+
+
 
     conn.commit()
     cur.close()

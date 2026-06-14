@@ -1,4 +1,5 @@
 import cloudinary
+from cloudinary import uploader
 import logging
 import traceback
 from flask import Blueprint, render_template, session, redirect, request, flash
@@ -17,14 +18,16 @@ def home():
     try:
         conn = get_db()
         cur = get_cursor(conn)
-        cur.execute("SELECT shop_name, slug FROM shops")
+        cur.execute("SELECT shop_name, slug ,description, logo_url,banner_url FROM shops")
         shops = cur.fetchall()
+        print(shops)
         cur.close()
         conn.close()
         return render_template("index.html", shops=shops)
     except Exception as e:
         logger.error(f"[home] DB error: {e}")
         return render_template("index.html", shops=[], db_error=True)
+    
 
 
 @shop_bp.route("/search")
@@ -147,6 +150,62 @@ def dashboard():
 
     return render_template('dashboard/dashboard.html', shop=shop, products=products, orders=orders)
 
+@shop_bp.route("/shop-settings", methods=["GET", "POST"])
+@login_required
+def shop_settings():
+    conn=get_db()
+    cur=get_cursor(conn)
+
+    cur.execute(
+        "Select * from shops where user_id=%s",(session["user_id"],)
+    )
+    shop=cur.fetchone()
+    if not shop:
+        cur.close()
+        conn.close()
+        return "shop not found",404
+
+    if request.method=="POST":
+        shop_name = request.form.get("shop_name")
+        description = request.form.get("description")
+
+        logo_url = shop["logo_url"]
+        banner_url = shop["banner_url"]
+
+    #upload logo
+        if "logo" in request.files and request.files["logo"].filename != "":
+            result=uploader.upload(
+                request.files['logo'],
+                folder="shop_logos"
+            )
+            logo_url=result["secure_url"]
+
+    #upload banner
+        if "banner" in request.files and request.files["banner"].filename != "":
+            result=uploader.upload(
+                request.files['banner'],
+                folder="shop_banners"
+            )
+            banner_url=result["secure_url"]
+    
+        cur.execute("""
+        update shops set shop_name=%s,
+        description=%s,
+        logo_url=%s,
+        banner_url=%s
+        where id=%s
+    """,(shop_name,description,logo_url,banner_url,shop["id"]))
+
+    
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect("/dashboard")
+
+    cur.close()
+    conn.close()
+    return render_template("dashboard/shop_settings.html",shop=shop)    
+
 
 @shop_bp.route('/create-shop', methods=['GET', 'POST'])
 @login_required
@@ -167,7 +226,7 @@ def view_store(slug):
     conn = get_db()
     cur = get_cursor(conn)
 
-    cur.execute("SELECT id, shop_name, slug FROM shops WHERE slug = %s", (slug,))
+    cur.execute("SELECT id, shop_name, slug , description, logo_url, banner_url FROM shops WHERE slug = %s", (slug,))
     shop = cur.fetchone()
 
     if not shop:
@@ -228,7 +287,7 @@ def add_product():
         if "image" in request.files and request.files['image'].filename !="":
             file=request.files["image"]
             # upload to cloudniary 
-            result= cloudinary.uploader.upload(
+            result= cloudinary.upload(
                 file,
                 folder="products",
             )

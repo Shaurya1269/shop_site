@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS shops(
     user_id INTEGER NOT NULL,
     shop_name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
+    description text,
+    logo_url text,
+    banner_url text,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
