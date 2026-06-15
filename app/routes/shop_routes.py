@@ -34,7 +34,7 @@ def home():
 
     except Exception as e:
         logger.error(f"[home] DB error: {e}")
-        return render_template("index.html", shops=[],featured_products=[] ,db_error=True)
+        return render_template("index.html", shops=[],featured_products=[] ,db_error=str(e))
     
 
 

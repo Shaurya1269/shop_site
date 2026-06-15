@@ -121,7 +121,7 @@
 
             {% if db_error %}
             <div class="flash flash-danger">
-                <strong>Database Error:</strong> Could not connect to the database.
+                <strong>Database Error:</strong> {{ db_error }}
             </div>
             {% endif %}
         </div>
