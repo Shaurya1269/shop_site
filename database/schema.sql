@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS shops(
     shop_name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     description text,
+    category text,
     logo_url text,
     banner_url text,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

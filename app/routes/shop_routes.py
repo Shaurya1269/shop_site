@@ -20,13 +20,21 @@ def home():
         cur = get_cursor(conn)
         cur.execute("SELECT shop_name, slug ,description, logo_url,banner_url FROM shops")
         shops = cur.fetchall()
-        print(shops)
+       
+        cur.execute("""
+        select products.id,products.name,products.price,products.image_url, shops.shop_name,shops.slug 
+        from products join shops on products.shop_id=shops_id
+        order by products.id desc limit 8
+        """)
+        featured_products=cur.fetchall()
+
         cur.close()
         conn.close()
-        return render_template("index.html", shops=shops)
+        return render_template("index.html", shops=shops,featured_products=featured_products)
+
     except Exception as e:
         logger.error(f"[home] DB error: {e}")
-        return render_template("index.html", shops=[], db_error=True)
+        return render_template("index.html", shops=[],featured_products=[] ,db_error=True)
     
 
 
@@ -212,9 +220,11 @@ def shop_settings():
 def create_shop_page():
     if request.method == 'POST':
         shop_name = request.form.get("shop_name")
+        category = request.form.get("category")
+        description = request.form.get("description")
         if not shop_name:
             return "Shop name is required", 400
-        create_shop(session['user_id'], shop_name)
+        create_shop(session['user_id'], shop_name, category, description)
         return redirect("/dashboard")
 
     return render_template("dashboard/create_shop.html")

@@ -129,6 +129,16 @@ then
     select 1
     from information_schema.columns
     where table_name='shops'
+    and column_name='category'
+    )then   
+    alter table shops
+    add column category text;
+    end if;
+
+    if not exists(
+    select 1
+    from information_schema.columns
+    where table_name='shops'
     and column_name='logo_url'
     )then
     alter table shops

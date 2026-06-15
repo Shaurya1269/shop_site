@@ -6,6 +6,15 @@
 
 <div class="container" style="padding:48px 24px;">
 
+    {% if not shop %}
+    <div style="max-width: 400px; margin: 48px auto; text-align: center; border: 1px solid var(--color-border); border-radius: 12px; padding: 48px 32px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h2 style="margin-top:0;font-size:28px;margin-bottom:8px;">Welcome!</h2>
+        <p style="color:var(--color-text-secondary); margin-bottom: 8px; font-size:16px;">You don't have a shop yet.</p>
+        <p style="color:var(--color-text-secondary); margin-bottom: 32px; font-size:16px;">Create one to start selling.</p>
+        <a href="/create-shop" class="btn btn-primary" style="display:inline-block; padding: 12px 24px; font-size:16px; font-weight:600; text-decoration:none;">Create Shop</a>
+    </div>
+    {% else %}
+
     <div class="section-header">
         <h1 class="section-title">Dashboard</h1>
     </div>
@@ -156,6 +165,7 @@
         {% endif %}
     </div>
 
+    {% endif %}
 </div>
 
 {% endblock %}

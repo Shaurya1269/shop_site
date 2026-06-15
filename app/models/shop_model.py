@@ -2,17 +2,17 @@ from app.utils.db import get_db, get_cursor
 import uuid
 
 
-def create_shop(user_id, shop_name):
+def create_shop(user_id, shop_name, category=None, description=None):
     """Create a new shop for a user with a unique slug."""
     conn = get_db()
     cur = get_cursor(conn)
 
     slug = generate_slug(shop_name)
     cur.execute("""
-        INSERT INTO shops (user_id, shop_name, slug)
-        VALUES (%s, %s, %s)
+        INSERT INTO shops (user_id, shop_name, slug, category, description)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING id
-    """, (user_id, shop_name, slug))
+    """, (user_id, shop_name, slug, category, description))
 
     shop_id = cur.fetchone()['id']
     conn.commit()
