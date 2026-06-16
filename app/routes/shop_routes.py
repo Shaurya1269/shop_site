@@ -23,7 +23,7 @@ def home():
        
         cur.execute("""
         select products.id,products.name,products.price,products.image_url, shops.shop_name,shops.slug 
-        from products join shops on products.shop_id=shops_id
+        from products join shops on products.shop_id=shops.id
         order by products.id desc limit 8
         """)
         featured_products=cur.fetchall()
@@ -297,7 +297,7 @@ def add_product():
         if "image" in request.files and request.files['image'].filename !="":
             file=request.files["image"]
             # upload to cloudniary 
-            result= cloudinary.upload(
+            result= uploader.upload(
                 file,
                 folder="products",
             )

@@ -54,8 +54,10 @@ html {
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #e0f2fe 100%); /* Ombre effect from almost white to pale to bluish, vibrant and happy */
-  color: #1e293b; /* Dark text for visibility on light background */
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #e0f2fe 100%);
+  /* Ombre effect from almost white to pale to bluish, vibrant and happy */
+  color: #1e293b;
+  /* Dark text for visibility on light background */
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -141,7 +143,8 @@ p {
   font-family: 'Outfit', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #0f172a; /* Dark for visibility */
+  color: #0f172a;
+  /* Dark for visibility */
   letter-spacing: -0.5px;
   flex-shrink: 0;
   display: flex;
@@ -160,30 +163,36 @@ p {
 
 .nav-search-form {
   display: flex;
-  background: rgba(255, 255, 255, 0.4); /* Make it slightly more opaque since background is light */
+  background: rgba(255, 255, 255, 0.4);
+  /* Make it slightly more opaque since background is light */
   border-radius: 30px;
   overflow: hidden;
   transition: all var(--transition);
-  border: 1px solid rgba(255, 105, 180, 0.5); /* Pink glow when not in use */
+  border: 1px solid rgba(255, 105, 180, 0.5);
+  /* Pink glow when not in use */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.2);
 }
 
 .nav-search-form:focus-within {
   border-color: rgba(0, 191, 255, 0.8);
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 15px rgba(0, 191, 255, 0.4); /* Blue glow when in use */
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+  /* Blue glow when in use */
 }
 
 input[type="text"].nav-search-input,
 .nav-search-input {
   flex: 1;
-  border: none !important; /* Force override of the global border */
+  border: none !important;
+  /* Force override of the global border */
   background: transparent !important;
   padding: 10px 16px;
   font-size: 14px;
-  color: #0f172a; /* Dark text */
+  color: #0f172a;
+  /* Dark text */
   outline: none;
 }
+
 input[type="text"].nav-search-input::placeholder,
 .nav-search-input::placeholder {
   color: #64748b;
@@ -214,7 +223,8 @@ input[type="text"].nav-search-input::placeholder,
 .nav-link {
   font-size: 14px;
   font-weight: 500;
-  color: #475569; /* Dark grey for visibility */
+  color: #475569;
+  /* Dark grey for visibility */
   display: flex;
   align-items: center;
   gap: 6px;
@@ -223,7 +233,8 @@ input[type="text"].nav-search-input::placeholder,
 }
 
 .nav-link:hover {
-  color: #0ea5e9; /* Vivid blue on hover */
+  color: #0ea5e9;
+  /* Vivid blue on hover */
   text-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
 }
 
@@ -787,43 +798,6 @@ textarea:focus {
   box-shadow: var(--shadow-sm);
 }
 
-/* ===== Dashboard Grid ===== */
-.dash-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 32px;
-  margin-bottom: 64px;
-}
-
-.dash-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  text-decoration: none;
-  transition: all var(--transition);
-  box-shadow: var(--shadow-md);
-}
-
-.dash-card:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-4px);
-}
-
-.dash-icon {
-  margin-bottom: 20px;
-  color: var(--color-text-secondary);
-}
-
-.dash-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
 /* ===== Flash Messages ===== */
 .flash {
   padding: 16px 24px;
@@ -928,5 +902,616 @@ textarea:focus {
 
   .section {
     padding: 48px 0;
+  }
+}
+
+/* ===============================
+   Dashboard Figma Design Styles
+================================ */
+
+.dash-ui-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  font-family: 'Inter', sans-serif;
+  background: #f8f9fa; /* Matches the light background in the figma */
+}
+
+/* Header Section */
+.dash-ui-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dash-ui-header-text h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-ui-header-text p {
+  font-size: 15px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.dash-ui-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.dash-ui-btn-outline:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+/* Banner Section */
+.dash-ui-banner-card {
+  position: relative;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+}
+
+.dash-ui-banner-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dash-ui-banner-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #1f2937, #4b5563);
+}
+
+.dash-ui-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
+}
+
+.dash-ui-banner-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 32px;
+}
+
+.dash-ui-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.dash-ui-shop-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  border: 4px solid #FDE68A;
+  background: #111827;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-ui-shop-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dash-ui-logo-placeholder {
+  color: #FDE68A;
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.dash-ui-shop-info h2 {
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-ui-shop-info p {
+  color: #E5E7EB;
+  font-size: 16px;
+  margin: 0 0 12px 0;
+}
+
+.dash-ui-shop-meta {
+  display: flex;
+  gap: 16px;
+  color: #D1D5DB;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.dash-ui-shop-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-ui-shop-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.dash-ui-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #4F46E5;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+}
+
+.dash-ui-btn-primary:hover {
+  background: #4338CA;
+}
+
+/* Stats Row */
+.dash-ui-stats-bar {
+  display: flex;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #F3F4F6;
+  justify-content: space-between;
+}
+
+.dash-ui-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  padding: 0 24px;
+}
+
+.dash-ui-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-ui-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-ui-stat-label {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.dash-ui-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.dash-ui-stat-sub {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.dash-ui-stat-divider {
+  width: 1px;
+  background: #E5E7EB;
+  margin: 0 16px;
+}
+
+/* Quick Actions */
+.dash-ui-section-header {
+  margin-bottom: 16px;
+}
+
+.dash-ui-section-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.dash-ui-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.dash-ui-action-card {
+  background: white;
+  border: 1px solid #F3F4F6;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+}
+
+.dash-ui-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border-color: #E5E7EB;
+}
+
+.dash-ui-action-icon {
+  width: 48px;
+  height: 48px;
+  background: #F9FAFB;
+  border: 1px solid #F3F4F6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-ui-action-text h4 {
+  color: #4F46E5;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.dash-ui-action-text p {
+  color: #6B7280;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Bottom Grid */
+.dash-ui-bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 24px;
+}
+
+.dash-ui-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dash-ui-panel-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.dash-ui-panel-header a {
+  color: #4F46E5;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dash-ui-panel-header a:hover {
+  text-decoration: underline;
+}
+
+/* Products Panel */
+.dash-ui-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.dash-ui-product-card {
+  background: white;
+  border: 1px solid #F3F4F6;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-ui-product-img {
+  width: 100%;
+  height: 200px;
+  background: #F9FAFB;
+  overflow: hidden;
+  position: relative;
+}
+
+.dash-ui-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.dash-ui-placeholder-img {
+  width: 100%;
+  height: 100%;
+  background: #E5E7EB;
+}
+
+.dash-ui-product-info {
+  padding: 16px;
+  flex: 1;
+}
+
+.dash-ui-product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ui-product-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.dash-ui-product-meta {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.dash-ui-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dash-ui-badge.badge-active {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.dash-ui-badge.badge-warning {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.dash-ui-product-actions {
+  display: flex;
+  border-top: 1px solid #F3F4F6;
+  padding: 8px 16px;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #FDFDFD;
+}
+
+.dash-ui-btn-icon {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dash-ui-btn-icon:hover {
+  background: #F9FAFB;
+  color: #111827;
+}
+
+.dash-ui-btn-icon-danger:hover {
+  background: #FEF2F2;
+  color: #DC2626;
+  border-color: #FECACA;
+}
+
+/* Orders Panel */
+.dash-ui-orders-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #F3F4F6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.dash-ui-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash-ui-order-item {
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.dash-ui-order-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dash-ui-order-icon {
+  width: 40px;
+  height: 40px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.dash-ui-order-details {
+  flex: 1.5;
+}
+
+.dash-ui-order-id {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4F46E5;
+  margin-bottom: 4px;
+}
+
+.dash-ui-order-date {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.dash-ui-order-customer {
+  flex: 1;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+}
+
+.dash-ui-order-amount {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.dash-ui-order-status {
+  width: 100px;
+  text-align: right;
+}
+
+.dash-ui-status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dash-ui-status-pending { background: #FEF3C7; color: #D97706; }
+.dash-ui-status-accepted { background: #E0F2FE; color: #0284C7; }
+.dash-ui-status-delivered { background: #DCFCE7; color: #16A34A; }
+.dash-ui-status-cancelled { background: #FFE4E6; color: #E11D48; }
+
+.dash-ui-empty {
+  text-align: center;
+  padding: 40px;
+  color: #9CA3AF;
+  font-size: 15px;
+  border: 1px dashed #E5E7EB;
+  border-radius: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .dash-ui-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dash-ui-stats-bar {
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .dash-ui-stat-divider {
+    display: none;
+  }
+  .dash-ui-stat-item {
+    min-width: calc(50% - 24px);
+    padding: 0;
+  }
+  .dash-ui-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-ui-banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .dash-ui-stat-item {
+    min-width: 100%;
+  }
+  .dash-ui-quick-actions {
+    grid-template-columns: 1fr;
+  }
+  .dash-ui-order-item {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .dash-ui-order-customer, .dash-ui-order-amount, .dash-ui-order-status {
+    flex: none;
+    width: 100%;
+    text-align: left;
+    padding: 0;
   }
 }
