@@ -15,7 +15,7 @@
 
             {% for product in featured_products %}
 
-            <a href="/shop/{{ product.slug }}" class="product-card">
+            <a href="/product/{{ product.id }}" class="product-card">
 
                 <div class="product-image">
 
@@ -155,6 +155,61 @@
                     Find nearby products without endless scrolling.
                 </p>
             </div>
+            <div class="dash-card">
+                <h3>Easy to use</h3>
+                <p>
+                    Simple and user-friendly interface.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Shop CTA Section -->
+<div class="section-bg"
+    style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 80px 0;">
+    <div class="container" style="text-align: center; max-width: 800px;">
+        <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 24px; color: white;">Ready to grow your local
+            business?</h2>
+        <p style="font-size: 18px; color: #cbd5e1; margin-bottom: 40px; line-height: 1.6;">
+            Join thousands of sellers on ShopLocal. Set up your digital storefront in minutes, reach more customers in
+            your area, and boost your sales effortlessly.
+        </p>
+
+        <div
+            style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 24px; padding: 40px; display: inline-block; max-width: 400px; width: 100%;">
+            <div style="font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #e2e8f0;">Pro Seller Plan</div>
+            <div style="font-size: 48px; font-weight: 800; margin-bottom: 8px;">₹899<span
+                    style="font-size: 16px; font-weight: 500; color: #94a3b8;">/month</span></div>
+            <div style="font-size: 14px; color: #94a3b8; margin-bottom: 32px;">Cancel anytime. No hidden fees.</div>
+
+            <ul
+                style="list-style: none; padding: 0; margin: 0 0 32px 0; text-align: left; display: flex; flex-direction: column; gap: 12px;">
+                <li style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #f1f5f9;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Unlimited Product Listings
+                </li>
+                <li style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #f1f5f9;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Custom Shop Branding
+                </li>
+                <li style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #f1f5f9;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    0% Commission on Sales
+                </li>
+            </ul>
+
+            <a href="#" class="btn-primary"
+                style="display: block; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; text-decoration: none; background: white; color: #0f172a; transition: all 0.2s;">
+                Create Your Shop
+            </a>
+            <div style="font-size: 12px; color: #64748b; margin-top: 16px;">Payments powered securely by Razorpay</div>
         </div>
     </div>
 </div>

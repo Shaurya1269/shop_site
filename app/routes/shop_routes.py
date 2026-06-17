@@ -747,14 +747,14 @@ def view_product(product_id):
     cur = get_cursor(conn)
 
     cur.execute("""
-        SELECT products.*, shops.shop_name, shops.slug as shop_slug,
+        SELECT products.*, shops.shop_name, shops.slug as shop_slug, shops.logo_url, shops.banner_url,
                COALESCE(AVG(reviews.rating), 0) as avg_rating,
                COUNT(reviews.id) as review_count
         FROM products
         JOIN shops ON products.shop_id = shops.id
         LEFT JOIN reviews ON products.id = reviews.product_id
         WHERE products.id = %s
-        GROUP BY products.id, shops.shop_name, shops.slug
+        GROUP BY products.id, shops.shop_name, shops.slug, shops.logo_url, shops.banner_url
     """, (product_id,))
     product = cur.fetchone()
 
@@ -762,6 +762,15 @@ def view_product(product_id):
         cur.close()
         conn.close()
         return "Product not found", 404
+
+    # Fetch related products from the same shop
+    cur.execute("""
+        SELECT * FROM products
+        WHERE shop_id = %s AND id != %s
+        ORDER BY created_at DESC
+        LIMIT 4
+    """, (product['shop_id'], product_id))
+    related_products = cur.fetchall()
 
     cur.execute("""
         SELECT reviews.*, users.name as user_name 
@@ -790,7 +799,7 @@ def view_product(product_id):
     cur.close()
     conn.close()
 
-    return render_template("store/product_details.html", product=product, reviews=reviews, can_review=can_review)
+    return render_template("store/product_details.html", product=product, reviews=reviews, can_review=can_review, related_products=related_products)
 
 
 @shop_bp.route("/product/<int:product_id>/review", methods=["POST"])

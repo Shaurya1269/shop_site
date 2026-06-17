@@ -148,7 +148,7 @@
                 <div class="product-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
                     {% for product in products %}
                     <div class="product-card">
-                        <div class="product-image">
+                        <a href="/product/{{ product.id }}" class="product-image" style="text-decoration:none;">
                             {% if product.image_url %}
                             <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
                             {% else %}
@@ -156,9 +156,9 @@
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
                             </div>
                             {% endif %}
-                        </div>
+                        </a>
                         <div class="product-info" style="padding: 16px;">
-                            <div class="product-name" style="font-weight: 600; margin-bottom: 4px;">{{ product.name }}</div>
+                            <a href="/product/{{ product.id }}" class="product-name" style="font-weight: 600; margin-bottom: 4px; text-decoration: none; color: inherit; display: block;">{{ product.name }}</a>
                             <div class="product-shop" style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px;">{{ product.shop_name }}</div>
                             
                             {% if product.avg_rating > 0 %}

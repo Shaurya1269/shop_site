@@ -3,7 +3,7 @@
 {% block title %}{{ product.name }} — ShopLocal{% endblock %}
 
 {% block content %}
-<div class="container" style="padding: 48px 24px;">
+<div class="premium-container">
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -18,115 +18,175 @@
       {% endif %}
     {% endwith %}
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 64px; align-items: start;">
+    <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;color:#0f172a;text-decoration:none;font-weight:600;margin-bottom:24px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Back
+    </a>
+
+    <div class="premium-breadcrumb">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/shop/{{ product.shop_slug }}">Shop</a> <span>/</span> 
+        Product
+    </div>
+
+    <div class="premium-product-grid">
         
-        <!-- Product Image -->
-        <div style="background: white; border: 1px solid var(--color-border); border-radius: 16px; overflow: hidden; padding: 24px; display: flex; align-items: center; justify-content: center; min-height: 400px;">
+        <!-- Left Column: Image -->
+        <div class="glass-panel premium-image-wrapper" onclick="openLightbox()">
             {% if product.image_url %}
-            <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width: 100%; max-height: 500px; object-fit: contain;">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" id="main-product-image">
             {% else %}
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
             {% endif %}
         </div>
 
-        <!-- Product Details -->
+        <!-- Right Column: Details -->
         <div>
-            <div style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Sold by <a href="/shop/{{ product.shop_slug }}" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">{{ product.shop_name }}</a>
-            </div>
+            <h1 class="premium-title">{{ product.name }}</h1>
             
-            <h1 style="font-size: 32px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 16px;">{{ product.name }}</h1>
-            
-            <!-- Ratings Summary -->
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--color-border);">
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <span style="color: #FBBF24; font-size: 20px;">★</span>
-                    <span style="font-weight: 700; font-size: 18px;">{{ "%.1f"|format(product.avg_rating) }}</span>
+            <!-- Ratings -->
+            <div class="premium-rating">
+                <div class="premium-stars">
+                    {% for i in range(1, 6) %}
+                        {% if i <= product.avg_rating|round %}★{% else %}☆{% endif %}
+                    {% endfor %}
                 </div>
-                <span style="color: var(--color-text-secondary); font-size: 14px;">({{ product.review_count }} reviews)</span>
+                <span class="premium-review-count">
+                    {% if product.avg_rating > 0 %}
+                        {{ "%.1f"|format(product.avg_rating) }} ({{ product.review_count }} Reviews)
+                    {% else %}
+                        No reviews yet
+                    {% endif %}
+                </span>
             </div>
 
-            <div style="font-size: 36px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 24px;">
-                &#8377;{{ "%.2f"|format(product.price) }}
+            <!-- Price & Stock -->
+            <div class="premium-price-row">
+                <div class="premium-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
+                {% if product.stock > 0 %}
+                    <div class="premium-stock in-stock">
+                        <span style="margin-right:4px;">🟢</span> In Stock ({{ product.stock }})
+                    </div>
+                {% else %}
+                    <div class="premium-stock out-of-stock">
+                        <span style="margin-right:4px;">🔴</span> Out of Stock
+                    </div>
+                {% endif %}
             </div>
 
-            <div style="font-size: 16px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 32px;">
+            <!-- Seller Info -->
+            <div class="premium-seller-card glass-panel">
+                {% if product.logo_url %}
+                    <img src="{{ product.logo_url }}" class="premium-seller-logo" alt="{{ product.shop_name }}">
+                {% else %}
+                    <div class="premium-seller-logo" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                {% endif %}
+                <div class="premium-seller-info">
+                    <div class="premium-seller-label">Sold by</div>
+                    <div class="premium-seller-name">{{ product.shop_name }}</div>
+                </div>
+                <a href="/shop/{{ product.shop_slug }}" class="premium-seller-btn">Visit Shop</a>
+            </div>
+
+            <!-- Description -->
+            <div class="premium-description">
                 {{ product.description or 'No description provided for this product.' }}
             </div>
 
-            <!-- Add to Cart -->
-            <form action="/add-to-cart/{{ product.id }}" method="POST" style="margin-bottom: 24px;">
-                {% if product.stock > 0 %}
-                <button type="submit" class="btn btn-primary btn-block" style="padding: 16px; font-size: 18px; font-weight: 600; border-radius: 12px; cursor: pointer;">
-                    Add to Cart
-                </button>
-                <div style="margin-top: 12px; color: #16A34A; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    In Stock ({{ product.stock }} available)
+            <!-- Add to Cart Form -->
+            <form action="/add-to-cart/{{ product.id }}" method="POST" class="premium-actions">
+                <div class="premium-qty-row">
+                    <div class="premium-qty-label">Quantity</div>
+                    <div class="premium-qty-control">
+                        <button type="button" class="premium-qty-btn" onclick="decreaseQty()">-</button>
+                        <input type="number" id="qty-input" name="quantity" class="premium-qty-input" value="1" min="1" max="{{ product.stock if product.stock > 0 else 1 }}" readonly>
+                        <button type="button" class="premium-qty-btn" onclick="increaseQty()">+</button>
+                    </div>
                 </div>
-                {% else %}
-                <button type="button" class="btn btn-block" style="padding: 16px; font-size: 18px; font-weight: 600; border-radius: 12px; background: #F3F4F6; color: #9CA3AF; cursor: not-allowed;" disabled>
-                    Out of Stock
-                </button>
-                {% endif %}
+
+                <div class="premium-btn-group">
+                    <button type="submit" class="premium-btn premium-btn-primary" {% if product.stock == 0 %}disabled{% endif %}>
+                        Add to Cart
+                    </button>
+                    <button type="button" class="premium-btn premium-btn-secondary" {% if product.stock == 0 %}disabled{% endif %} onclick="alert('Buy Now flow coming soon!')">
+                        Buy Now
+                    </button>
+                </div>
             </form>
+
         </div>
     </div>
 
-    <!-- Reviews Section -->
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 32px; border-bottom: 1px solid var(--color-border); padding-bottom: 16px;">Customer Reviews</h2>
-
-        {% if can_review %}
-        <div style="background: #F9FAFB; border: 1px solid var(--color-border); border-radius: 16px; padding: 24px; margin-bottom: 48px;">
-            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
-            <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: 24px;">You purchased this item! Share your thoughts with other customers.</p>
-            
-            <form action="/product/{{ product.id }}/review" method="POST">
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Rating</label>
-                    <select name="rating" required style="width: 100%; padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; font-size: 16px;">
-                        <option value="5">5 Stars - Excellent</option>
-                        <option value="4">4 Stars - Good</option>
-                        <option value="3">3 Stars - Average</option>
-                        <option value="2">2 Stars - Poor</option>
-                        <option value="1">1 Star - Terrible</option>
-                    </select>
+    <!-- Related Products -->
+    {% if related_products %}
+    <div style="margin-top: 80px;">
+        <h2 class="premium-section-title">More from this Shop</h2>
+        <div class="product-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:24px;">
+            {% for rel_product in related_products %}
+            <a href="/product/{{ rel_product.id }}" class="product-card" style="text-decoration:none;">
+                <div class="product-image">
+                    {% if rel_product.image_url %}
+                    <img src="{{ rel_product.image_url }}" alt="{{ rel_product.name }}">
+                    {% else %}
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                    {% endif %}
                 </div>
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Review Comment</label>
-                    <textarea name="comment" rows="4" placeholder="What did you like or dislike?" style="width: 100%; padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; font-size: 16px; font-family: inherit; resize: vertical;"></textarea>
+                <div class="product-details" style="color:#0f172a;">
+                    <div class="product-name" style="font-weight:600;">{{ rel_product.name }}</div>
+                    <div class="product-price" style="font-weight:700;margin-top:8px;">&#8377;{{ "%.2f"|format(rel_product.price) }}</div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600;">Submit Review</button>
-            </form>
-        </div>
-        {% endif %}
-
-        {% if reviews %}
-            <div style="display: flex; flex-direction: column; gap: 24px;">
-            {% for review in reviews %}
-                <div style="border-bottom: 1px solid var(--color-border); padding-bottom: 24px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <div style="font-weight: 600; font-size: 15px;">{{ review.user_name }}</div>
-                        <div style="font-size: 13px; color: var(--color-text-secondary);">{{ review.created_at.strftime('%B %d, %Y') }}</div>
-                    </div>
-                    <div style="color: #FBBF24; font-size: 16px; margin-bottom: 12px;">
-                        {% for i in range(5) %}
-                            {% if i < review.rating %}★{% else %}☆{% endif %}
-                        {% endfor %}
-                    </div>
-                    <p style="font-size: 15px; color: var(--color-text-primary); line-height: 1.6; margin: 0;">
-                        {{ review.comment }}
-                    </p>
-                </div>
+            </a>
             {% endfor %}
-            </div>
-        {% else %}
-            <p style="color: var(--color-text-secondary); text-align: center; padding: 48px 0; background: #F9FAFB; border-radius: 12px; border: 1px dashed var(--color-border);">
-                No reviews yet. Be the first to review this product!
-            </p>
-        {% endif %}
+        </div>
     </div>
+    {% endif %}
 
 </div>
+
+<!-- Lightbox Modal -->
+<div class="premium-modal" id="lightbox-modal">
+    <button class="premium-modal-close" onclick="closeLightbox()">&times;</button>
+    {% if product.image_url %}
+    <img src="{{ product.image_url }}" class="premium-modal-content" id="lightbox-image">
+    {% endif %}
+</div>
+
+<script>
+    const qtyInput = document.getElementById('qty-input');
+    const maxStock = {{ product.stock if product.stock else 0 }};
+
+    function decreaseQty() {
+        let current = parseInt(qtyInput.value);
+        if (current > 1) {
+            qtyInput.value = current - 1;
+        }
+    }
+
+    function increaseQty() {
+        let current = parseInt(qtyInput.value);
+        if (current < maxStock) {
+            qtyInput.value = current + 1;
+        }
+    }
+
+    const modal = document.getElementById('lightbox-modal');
+    function openLightbox() {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Close on click outside
+    modal.addEventListener('click', function(e) {
+        if(e.target === modal) {
+            closeLightbox();
+        }
+    });
+</script>
+
 {% endblock %}
