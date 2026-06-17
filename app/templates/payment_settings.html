@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h2>Payment Settings</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <label>
+
+            <input type="checkbox" name="razorpay_enabled" {% if payment.razorpay_enabled %}checked{% endif %}>
+
+            Enable Razorpay
+
+        </label>
+
+        <br><br>
+
+        <label>
+
+            <input type="checkbox" name="upi_enabled" {% if payment.upi_enabled %}checked{% endif %}>
+
+            Enable UPI
+
+        </label>
+
+        <br>
+
+        <input type="text" name="upi_id" placeholder="example@okaxis" value="{{ payment.upi_id or '' }}">
+
+        <br><br>
+
+        <label>
+
+            <input type="checkbox" name="phone_enabled" {% if payment.phone_enabled %}checked{% endif %}>
+
+            Enable Phone Number
+
+        </label>
+
+        <br>
+
+        <input type="text" name="phone_number" placeholder="9876543210" value="{{ payment.phone_number or '' }}">
+
+        <br><br>
+
+        <label>
+
+            <input type="checkbox" name="qr_enabled" {% if payment.qr_enabled %}checked{% endif %}>
+
+            Enable QR
+
+        </label>
+
+        <br>
+
+        <input type="file" name="qr">
+
+        <br><br>
+
+        <label>
+
+            <input type="checkbox" name="cod_enabled" {% if payment.cod_enabled %}checked{% endif %}>
+
+            Cash on Delivery
+
+        </label>
+
+        <br><br>
+
+        <label>
+
+            <input type="checkbox" name="pickup_enabled" {% if payment.pickup_enabled %}checked{% endif %}>
+
+            Pay at Store
+
+        </label>
+
+        <br><br>
+
+        <button class="btn btn-primary">
+
+            Save
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

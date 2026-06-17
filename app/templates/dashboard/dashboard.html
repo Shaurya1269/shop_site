@@ -7,11 +7,15 @@
 <div class="dash-ui-container">
 
     {% if not shop %}
-    <div style="max-width: 400px; margin: 48px auto; text-align: center; border: 1px solid var(--color-border); border-radius: 12px; padding: 48px 32px; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); box-shadow: var(--shadow-md);">
+    <div
+        style="max-width: 400px; margin: 48px auto; text-align: center; border: 1px solid var(--color-border); border-radius: 12px; padding: 48px 32px; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); box-shadow: var(--shadow-md);">
         <h2 style="margin-top:0;font-size:28px;margin-bottom:8px;">Welcome!</h2>
         <p style="color:var(--color-text-secondary); margin-bottom: 8px; font-size:16px;">You don't have a shop yet.</p>
-        <p style="color:var(--color-text-secondary); margin-bottom: 32px; font-size:16px;">Create one to start selling.</p>
-        <a href="/create-shop" class="btn btn-primary" style="display:inline-block; padding: 12px 24px; font-size:16px; font-weight:600; text-decoration:none;">Create Shop</a>
+        <p style="color:var(--color-text-secondary); margin-bottom: 32px; font-size:16px;">Create one to start selling.
+        </p>
+        <a href="/create-shop" class="btn btn-primary"
+            style="display:inline-block; padding: 12px 24px; font-size:16px; font-weight:600; text-decoration:none;">Create
+            Shop</a>
     </div>
     {% else %}
 
@@ -22,7 +26,11 @@
             <p>Manage your shop and grow your business</p>
         </div>
         <a href="/shop-settings" class="dash-ui-btn-outline">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
             Edit Shop
         </a>
     </div>
@@ -35,7 +43,7 @@
         <div class="dash-ui-banner-placeholder"></div>
         {% endif %}
         <div class="dash-ui-banner-overlay"></div>
-        
+
         <div class="dash-ui-banner-content">
             <div class="dash-ui-banner-left">
                 <div class="dash-ui-shop-logo">
@@ -46,22 +54,45 @@
                     {% endif %}
                 </div>
                 <div class="dash-ui-shop-info">
-                    <h2>{{ shop.shop_name }} <svg width="20" height="20" viewBox="0 0 24 24" fill="#3B82F6" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg></h2>
+                    <h2>{{ shop.shop_name }} <svg width="20" height="20" viewBox="0 0 24 24" fill="#3B82F6"
+                            stroke="#fff" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9 12l2 2 4-4"></path>
+                        </svg></h2>
                     <p>{{ shop.description or "Premium goods and services for your business" }}</p>
                     <div class="dash-ui-shop-meta">
-                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Local Store</span>
-                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Active Member</span>
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg> Local Store</span>
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg> Active Member</span>
                     </div>
                     <div class="dash-ui-shop-rating">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B"
+                            stroke-width="2">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                            </polygon>
+                        </svg>
                         4.8 (32 reviews)
                     </div>
                 </div>
             </div>
             <div class="dash-ui-banner-right">
                 <a href="/shop/{{ shop.slug }}" class="dash-ui-btn-primary">
-                    Visit Store 
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    Visit Store
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
                 </a>
             </div>
         </div>
@@ -71,7 +102,13 @@
     <div class="dash-ui-stats-bar">
         <div class="dash-ui-stat-item">
             <div class="dash-ui-stat-icon" style="background:#EEF2FF; color:#4F46E5;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                    </path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
             </div>
             <div class="dash-ui-stat-info">
                 <div class="dash-ui-stat-label">Products</div>
@@ -82,7 +119,11 @@
         <div class="dash-ui-stat-divider"></div>
         <div class="dash-ui-stat-item">
             <div class="dash-ui-stat-icon" style="background:#DCFCE7; color:#16A34A;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
             </div>
             <div class="dash-ui-stat-info">
                 <div class="dash-ui-stat-label">Orders</div>
@@ -93,18 +134,27 @@
         <div class="dash-ui-stat-divider"></div>
         <div class="dash-ui-stat-item">
             <div class="dash-ui-stat-icon" style="background:#FEF3C7; color:#D97706;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
             </div>
             <div class="dash-ui-stat-info">
                 <div class="dash-ui-stat-label">Pending Orders</div>
-                <div class="dash-ui-stat-value">{% set pending = namespace(count=0) %}{% for o in orders %}{% if o.status|lower == 'pending' %}{% set pending.count = pending.count + 1 %}{% endif %}{% endfor %}{{ pending.count }}</div>
+                <div class="dash-ui-stat-value">{% set pending = namespace(count=0) %}{% for o in orders %}{% if
+                    o.status|lower == 'pending' %}{% set pending.count = pending.count + 1 %}{% endif %}{% endfor %}{{
+                    pending.count }}</div>
                 <div class="dash-ui-stat-sub">Awaiting your action</div>
             </div>
         </div>
         <div class="dash-ui-stat-divider"></div>
         <div class="dash-ui-stat-item">
             <div class="dash-ui-stat-icon" style="background:#E0F2FE; color:#0284C7;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                    </polygon>
+                </svg>
             </div>
             <div class="dash-ui-stat-info">
                 <div class="dash-ui-stat-label">Rating</div>
@@ -115,7 +165,10 @@
         <div class="dash-ui-stat-divider"></div>
         <div class="dash-ui-stat-item">
             <div class="dash-ui-stat-icon" style="background:#FFE4E6; color:#E11D48;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
             </div>
             <div class="dash-ui-stat-info">
                 <div class="dash-ui-stat-label">Views</div>
@@ -132,7 +185,10 @@
     <div class="dash-ui-quick-actions">
         <a href="/add-product" class="dash-ui-action-card">
             <div class="dash-ui-action-icon" style="color:#4F46E5;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
             </div>
             <div class="dash-ui-action-text">
                 <h4>Add Product</h4>
@@ -141,7 +197,12 @@
         </a>
         <a href="#manage-products" class="dash-ui-action-card">
             <div class="dash-ui-action-icon" style="color:#4F46E5;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
             </div>
             <div class="dash-ui-action-text">
                 <h4>Manage Products</h4>
@@ -150,7 +211,12 @@
         </a>
         <a href="/orders" class="dash-ui-action-card">
             <div class="dash-ui-action-icon" style="color:#4F46E5;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
             </div>
             <div class="dash-ui-action-text">
                 <h4>Manage Orders</h4>
@@ -159,13 +225,34 @@
         </a>
         <a href="/shop-settings" class="dash-ui-action-card">
             <div class="dash-ui-action-icon" style="color:#4F46E5;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
             </div>
             <div class="dash-ui-action-text">
                 <h4>Shop Settings</h4>
                 <p>Update shop information</p>
             </div>
         </a>
+
+        <a href="/payment-settings" class="dash-ui-action-card">
+            <div class="dash-ui-action-icon" style="color:#4F46E5;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </div>
+            <div class="dash-ui-action-text">
+                <h4>Payment Settings</h4>
+                <p>Configure payment methods</p>
+            </div>
+        </a>
+
     </div>
 
     <!-- Bottom Layout -->
@@ -193,17 +280,29 @@
                         <div class="dash-ui-product-meta">
                             <span class="dash-ui-stock">Stock: {{ product.stock }}</span>
                         </div>
-                        <div class="dash-ui-badge {% if product.stock > 5 %}badge-active{% else %}badge-warning{% endif %}">
+                        <div
+                            class="dash-ui-badge {% if product.stock > 5 %}badge-active{% else %}badge-warning{% endif %}">
                             {% if product.stock > 5 %}Active{% else %}Low Stock{% endif %}
                         </div>
                     </div>
                     <div class="dash-ui-product-actions">
                         <a href="/product/{{ product.id }}/edit" class="dash-ui-btn-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
                         </a>
-                        <form action="/product/{{ product.id }}/delete" method="POST" onsubmit="return confirm('Delete this product?');" style="margin:0;">
+                        <form action="/product/{{ product.id }}/delete" method="POST"
+                            onsubmit="return confirm('Delete this product?');" style="margin:0;">
                             <button type="submit" class="dash-ui-btn-icon dash-ui-btn-icon-danger">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
                             </button>
                         </form>
                     </div>
@@ -226,7 +325,11 @@
                 {% for order in orders[:6] %}
                 <div class="dash-ui-order-item">
                     <div class="dash-ui-order-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                        </svg>
                     </div>
                     <div class="dash-ui-order-details">
                         <div class="dash-ui-order-id">Order #ORD{{ order.id }}</div>
@@ -235,7 +338,8 @@
                     <div class="dash-ui-order-customer">{{ order.customer_name or 'Customer' }}</div>
                     <div class="dash-ui-order-amount">&#8377;{{ "%.2f"|format(order.total|float) }}</div>
                     <div class="dash-ui-order-status">
-                        <span class="dash-ui-status-badge dash-ui-status-{{ order.status|lower }}">{{ order.status }}</span>
+                        <span class="dash-ui-status-badge dash-ui-status-{{ order.status|lower }}">{{ order.status
+                            }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -250,7 +354,7 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const hour = new Date().getHours();
         let greeting = "Good Evening";
         if (hour < 12) {

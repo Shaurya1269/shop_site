@@ -8,6 +8,7 @@ from app.utils.db import get_db, get_cursor
 from app.utils.decorators import login_required
 from app.models.shop_model import create_shop
 import os
+from app.models.payment_model import *
 
 logger = logging.getLogger(__name__)
 shop_bp = Blueprint('shop', __name__)
@@ -855,3 +856,62 @@ def submit_review(product_id):
     cur.close()
     conn.close()
     return redirect(f"/product/{product_id}")
+
+@shop_bp.route("/payment-settings", methods=["GET", "POST"])
+@login_required
+def payment_settings():
+    conn = get_db()
+    cur = get_cursor(conn)
+    cur.execute("""
+    select id from shops where user_id=%s
+    """, (session['user_id'],))
+    shop = cur.fetchone()
+
+    if not shop:
+        cur.close()
+        conn.close()
+        return "Shop not found", 404
+
+    payment = get_payment_methods(shop['id'])
+    if not payment:
+        create_payment_method(shop['id'])
+        payment = get_payment_methods(shop['id'])
+
+    if request.method == "POST":
+        razorpay_enabled = "razorpay_enabled" in request.form
+        upi_enabled = "upi_enabled" in request.form
+        phone_enabled = "phone_enabled" in request.form
+        qr_enabled = "qr_enabled" in request.form
+        cod_enabled = "cod_enabled" in request.form
+        pickup_enabled = "pickup_enabled" in request.form
+
+        upi_id = request.form.get("upi_id")
+        phone_number = request.form.get("phone_number")
+
+        qr_image_url = payment.get("qr_image_url") if payment else None
+
+        if "qr" in request.files and request.files["qr"].filename != "":
+            result = uploader.upload(request.files["qr"], folder="payment_qr")
+            qr_image_url = result["secure_url"]
+
+        update_payment_method(
+            shop["id"],
+            razorpay_enabled,
+            upi_enabled,
+            qr_enabled,
+            phone_enabled,
+            cod_enabled,
+            pickup_enabled,
+            upi_id,
+            phone_number,
+            qr_image_url
+        )
+
+        flash("Payment methods updated successfully!", "success")
+        cur.close()
+        conn.close()
+        return redirect("/dashboard")
+    
+    cur.close()
+    conn.close()
+    return render_template("payment_settings.html", payment=payment)

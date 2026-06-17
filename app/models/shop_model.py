@@ -15,6 +15,11 @@ def create_shop(user_id, shop_name, category=None, description=None):
     """, (user_id, shop_name, slug, category, description))
 
     shop_id = cur.fetchone()['id']
+
+    cur.execute("""
+    INSERT INTO payment_methods(shop_id)
+    VALUES(%s)
+    """,(shop_id,))
     conn.commit()
     cur.close()
     conn.close()

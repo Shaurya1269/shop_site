@@ -73,3 +73,19 @@ CREATE TABLE IF NOT EXISTS reviews(
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(product_id, user_id)
 );
+DROP TABLE IF EXISTS payment_methods;
+CREATE TABLE IF NOT EXISTS payment_methods(
+    id serial primary key,
+    shop_id integer not NULL references shops(id) on delete CASCADE,
+    razorpay_enabled boolean default false,
+    upi_enabled boolean default false,
+    qr_enabled boolean default false,
+    phone_enabled boolean default false,
+    cod_enabled boolean default false,
+    pickup_enabled boolean default false,
+    upi_id text,
+    phone_number text,
+    qr_image_url text,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
