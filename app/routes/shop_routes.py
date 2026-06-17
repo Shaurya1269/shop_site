@@ -41,41 +41,100 @@ def home():
 @shop_bp.route("/search")
 def search():
     query = request.args.get("q", "").strip()
+    category = request.args.get("category", "")
+    price = request.args.get("price", "")
+    rating = request.args.get("rating", "")
+    availability = request.args.get("availability", "")
+    sort = request.args.get("sort", "newest")
+    
     try:
         conn = get_db()
         cur = get_cursor(conn)
 
+        # Fetch available categories for sidebar
+        cur.execute("SELECT DISTINCT category FROM shops WHERE category IS NOT NULL AND category != ''")
+        categories = [row['category'] for row in cur.fetchall()]
+
         shops = []
         products = []
 
-        if query:
+        # Shops search (only if there's a text query, no filters apply to shops)
+        if query and not any([category, price, rating, availability]):
             cur.execute("""
                 SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
             """, (f"%{query}%",))
             shops = cur.fetchall()
 
-            cur.execute("""
-                SELECT products.name,
-                       products.price,
-                       products.image_url,
-                       shops.shop_name,
-                       shops.slug
-                FROM products
-                JOIN shops ON products.shop_id = shops.id
-                WHERE products.name ILIKE %s
-            """, (f"%{query}%",))
-            products = cur.fetchall()
+        # Products search
+        sql = """
+            SELECT products.id, products.name,
+                   products.price,
+                   products.image_url,
+                   shops.shop_name,
+                   shops.slug as shop_slug,
+                   COALESCE(AVG(reviews.rating), 0) as avg_rating
+            FROM products
+            JOIN shops ON products.shop_id = shops.id
+            LEFT JOIN reviews ON products.id = reviews.product_id
+            WHERE 1=1
+        """
+        params = []
+        
+        if query:
+            sql += " AND products.name ILIKE %s"
+            params.append(f"%{query}%")
+            
+        if category:
+            sql += " AND shops.category = %s"
+            params.append(category)
+            
+        if price:
+            if price == "0-500":
+                sql += " AND products.price <= 500"
+            elif price == "500-1000":
+                sql += " AND products.price > 500 AND products.price <= 1000"
+            elif price == "1000+":
+                sql += " AND products.price > 1000"
+                
+        if availability == "in_stock":
+            sql += " AND products.stock > 0"
+            
+        sql += " GROUP BY products.id, shops.shop_name, shops.slug"
+        
+        if rating:
+            try:
+                min_rating = float(rating)
+                sql += f" HAVING COALESCE(AVG(reviews.rating), 0) >= {min_rating}"
+            except ValueError:
+                pass
+                
+        if sort == "price_asc":
+            sql += " ORDER BY products.price ASC"
+        elif sort == "price_desc":
+            sql += " ORDER BY products.price DESC"
+        else:
+            sql += " ORDER BY products.created_at DESC"
+            
+        cur.execute(sql, tuple(params))
+        products = cur.fetchall()
 
         cur.close()
         conn.close()
     except Exception as e:
         logger.error(f"[search] DB error: {e}")
+        categories = []
         shops = []
         products = []
 
     return render_template(
         "search_results.html",
         query=query,
+        category=category,
+        price=price,
+        rating=rating,
+        availability=availability,
+        sort=sort,
+        categories=categories,
         shops=shops,
         products=products
     )
@@ -679,3 +738,111 @@ def orders():
     conn.close()
 
     return render_template("dashboard/orders.html", orders=orders_list, is_shop_owner=True)
+
+
+@shop_bp.route("/product/<int:product_id>")
+def view_product(product_id):
+    """View individual product and its reviews."""
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    cur.execute("""
+        SELECT products.*, shops.shop_name, shops.slug as shop_slug,
+               COALESCE(AVG(reviews.rating), 0) as avg_rating,
+               COUNT(reviews.id) as review_count
+        FROM products
+        JOIN shops ON products.shop_id = shops.id
+        LEFT JOIN reviews ON products.id = reviews.product_id
+        WHERE products.id = %s
+        GROUP BY products.id, shops.shop_name, shops.slug
+    """, (product_id,))
+    product = cur.fetchone()
+
+    if not product:
+        cur.close()
+        conn.close()
+        return "Product not found", 404
+
+    cur.execute("""
+        SELECT reviews.*, users.name as user_name 
+        FROM reviews
+        JOIN users ON reviews.user_id = users.id
+        WHERE reviews.product_id = %s
+        ORDER BY reviews.created_at DESC
+    """, (product_id,))
+    reviews = cur.fetchall()
+
+    # Check if user has purchased this product (to allow reviewing)
+    can_review = False
+    if "user_id" in session:
+        cur.execute("""
+            SELECT 1 FROM order_items
+            JOIN orders ON order_items.order_id = orders.id
+            WHERE orders.user_id = %s AND order_items.product_id = %s
+            LIMIT 1
+        """, (session["user_id"], product_id))
+        if cur.fetchone():
+            # Check if already reviewed
+            cur.execute("SELECT 1 FROM reviews WHERE user_id = %s AND product_id = %s", (session["user_id"], product_id))
+            if not cur.fetchone():
+                can_review = True
+
+    cur.close()
+    conn.close()
+
+    return render_template("store/product_details.html", product=product, reviews=reviews, can_review=can_review)
+
+
+@shop_bp.route("/product/<int:product_id>/review", methods=["POST"])
+@login_required
+def submit_review(product_id):
+    """Submit a review for a product. Only allowed if user purchased it."""
+    rating = request.form.get("rating")
+    comment = request.form.get("comment", "").strip()
+
+    if not rating:
+        flash("Rating is required", "danger")
+        return redirect(f"/product/{product_id}")
+
+    try:
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            raise ValueError()
+    except ValueError:
+        flash("Invalid rating", "danger")
+        return redirect(f"/product/{product_id}")
+
+    user_id = session["user_id"]
+
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    # Verify purchase
+    cur.execute("""
+        SELECT 1 FROM order_items
+        JOIN orders ON order_items.order_id = orders.id
+        WHERE orders.user_id = %s AND order_items.product_id = %s
+        LIMIT 1
+    """, (user_id, product_id))
+    
+    if not cur.fetchone():
+        cur.close()
+        conn.close()
+        flash("You can only review products you have purchased.", "danger")
+        return redirect(f"/product/{product_id}")
+
+    try:
+        cur.execute("""
+            INSERT INTO reviews (product_id, user_id, rating, comment)
+            VALUES (%s, %s, %s, %s)
+        """, (product_id, user_id, rating, comment))
+        conn.commit()
+        flash("Review submitted successfully!", "success")
+    except Exception as e:
+        logger.error(f"Failed to submit review: {e}")
+        conn.rollback()
+        flash("You have already reviewed this product.", "danger")
+
+    cur.close()
+    conn.close()
+    return redirect(f"/product/{product_id}")

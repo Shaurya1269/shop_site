@@ -15,60 +15,175 @@
         </form>
     </div>
 
-    <!-- Shops Results -->
-    <div style="margin-bottom:48px;">
-        <div class="section-header" style="border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:24px;">
-            <h2 class="section-title">Shops ({{ shops|length if shops else 0 }})</h2>
-        </div>
-
-        {% if shops %}
-        <div class="shop-grid">
-            {% for shop in shops %}
-            <a href="/shop/{{ shop.slug }}" class="shop-card">
-                <div class="shop-banner">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-                </div>
-                <div class="shop-info">
-                    <div class="shop-name">{{ shop.shop_name }}</div>
-                    <div class="shop-desc">Local business matching your search.</div>
-                    <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p style="color:var(--color-text-secondary);">No shops found matching your search.</p>
-        {% endif %}
-    </div>
-
-    <!-- Product Results -->
-    <div>
-        <div class="section-header" style="border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:24px;">
-            <h2 class="section-title">Products ({{ products|length if products else 0 }})</h2>
-        </div>
-
-        {% if products %}
-        <div class="product-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <div class="product-image">
-                    {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}">
-                    {% else %}
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-                    {% endif %}
-                </div>
-                <div class="product-name">{{ product.name }}</div>
-                <div class="product-shop">{{ product.shop_name }}</div>
-                <div class="product-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
+<div class="search-layout" style="display: grid; grid-template-columns: 260px 1fr; gap: 32px; align-items: start;">
+        
+        <!-- Sidebar Filters -->
+        <aside class="search-sidebar" style="background: white; border: 1px solid var(--color-border); border-radius: 12px; padding: 24px; position: sticky; top: 24px;">
+            <form id="filter-form" action="/search" method="get">
+                <input type="hidden" name="q" value="{{ query }}">
                 
-                <a href="/shop/{{ product.slug }}" class="btn btn-outline btn-block" style="margin-top:auto;padding:10px;">View in Shop</a>
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">Filters</h3>
+                
+                <!-- Category -->
+                {% if categories %}
+                <div class="filter-group" style="margin-bottom: 24px;">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-primary);">Category</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="category" value="" {% if not category %}checked{% endif %} onchange="this.form.submit()">
+                            All Categories
+                        </label>
+                        {% for cat in categories %}
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="category" value="{{ cat }}" {% if category == cat %}checked{% endif %} onchange="this.form.submit()">
+                            {{ cat }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Price -->
+                <div class="filter-group" style="margin-bottom: 24px;">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-primary);">Price</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="price" value="" {% if not price %}checked{% endif %} onchange="this.form.submit()">
+                            Any Price
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="price" value="0-500" {% if price == '0-500' %}checked{% endif %} onchange="this.form.submit()">
+                            Under ₹500
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="price" value="500-1000" {% if price == '500-1000' %}checked{% endif %} onchange="this.form.submit()">
+                            ₹500 - ₹1000
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="price" value="1000+" {% if price == '1000+' %}checked{% endif %} onchange="this.form.submit()">
+                            Over ₹1000
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Rating -->
+                <div class="filter-group" style="margin-bottom: 24px;">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-primary);">Customer Reviews</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="rating" value="" {% if not rating %}checked{% endif %} onchange="this.form.submit()">
+                            Any Rating
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="rating" value="4" {% if rating == '4' %}checked{% endif %} onchange="this.form.submit()">
+                            <span style="color: #FBBF24;">★★★★☆</span> & Up
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="radio" name="rating" value="3" {% if rating == '3' %}checked{% endif %} onchange="this.form.submit()">
+                            <span style="color: #FBBF24;">★★★☆☆</span> & Up
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Availability -->
+                <div class="filter-group">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-primary);">Availability</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                            <input type="checkbox" name="availability" value="in_stock" {% if availability == 'in_stock' %}checked{% endif %} onchange="this.form.submit()">
+                            Include Out of Stock
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Main Results -->
+        <div class="search-main-results">
+            
+            <!-- Sorting Bar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border);">
+                <div style="font-size: 14px; color: var(--color-text-secondary);">
+                    Showing results for <strong>"{{ query }}"</strong>
+                </div>
+                <div>
+                    <select form="filter-form" name="sort" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+                        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Sort by: Newest Arrivals</option>
+                        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </div>
             </div>
-            {% endfor %}
+
+            <!-- Shops Results -->
+            {% if shops and query and not category and not price and not rating and not availability %}
+            <div style="margin-bottom:48px;">
+                <div class="section-header" style="margin-bottom:16px;">
+                    <h2 class="section-title">Shops ({{ shops|length }})</h2>
+                </div>
+                <div class="shop-grid">
+                    {% for shop in shops %}
+                    <a href="/shop/{{ shop.slug }}" class="shop-card">
+                        <div class="shop-banner">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                        </div>
+                        <div class="shop-info">
+                            <div class="shop-name">{{ shop.shop_name }}</div>
+                            <div class="shop-desc">Local business matching your search.</div>
+                            <div class="btn-shop" style="margin-top:auto;">Visit Shop</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Product Results -->
+            <div>
+                <div class="section-header" style="margin-bottom:16px;">
+                    <h2 class="section-title">Products ({{ products|length if products else 0 }})</h2>
+                </div>
+
+                {% if products %}
+                <div class="product-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if product.image_url %}
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-info" style="padding: 16px;">
+                            <div class="product-name" style="font-weight: 600; margin-bottom: 4px;">{{ product.name }}</div>
+                            <div class="product-shop" style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px;">{{ product.shop_name }}</div>
+                            
+                            {% if product.avg_rating > 0 %}
+                            <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 8px; font-size: 13px;">
+                                <span style="color: #FBBF24;">★</span>
+                                <span>{{ "%.1f"|format(product.avg_rating) }}</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="product-price" style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">&#8377;{{ "%.2f"|format(product.price) }}</div>
+                            
+                            <a href="/product/{{ product.id }}" class="btn btn-outline btn-block" style="text-align: center; padding: 8px; font-size: 14px;">View Product</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="padding: 40px; text-align: center; background: white; border-radius: 12px; border: 1px solid var(--color-border);">
+                    <p style="color:var(--color-text-secondary); font-size: 16px;">No products found matching your criteria.</p>
+                    <a href="/search" class="btn btn-primary" style="margin-top: 16px;">Clear Filters</a>
+                </div>
+                {% endif %}
+            </div>
+            
         </div>
-        {% else %}
-        <p style="color:var(--color-text-secondary);">No products found matching your search.</p>
-        {% endif %}
     </div>
 
 </div>
