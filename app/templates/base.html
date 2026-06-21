@@ -146,7 +146,87 @@
                 nav.classList.toggle('open');
             });
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const cards = document.querySelectorAll(".payment-card");
+
+            cards.forEach(card => {
+
+                const radio = card.querySelector("input");
+
+                card.addEventListener("click", () => {
+
+                    cards.forEach(c => {
+
+                        c.classList.remove("selected");
+
+                        const details = c.querySelector(".payment-details");
+
+                        if (details) {
+
+                            details.style.display = "none";
+
+                        }
+
+                    });
+
+                    radio.checked = true;
+
+                    card.classList.add("selected");
+
+                    const details = card.querySelector(".payment-details");
+
+                    if (details) {
+
+                        details.style.display = "block";
+
+                    }
+
+                });
+
+            });
+
+        });
+        function copyUPI() {
+            const text = document.getElementById("upi-id").innerText();
+            navigator.clipboard.writeText(text);
+            showToast("UPI ID Copied!");
+        }
+
+
+        function showToast(message, type = "success") {
+
+            const container = document.getElementById("toast-container");
+
+            const toast = document.createElement("div");
+
+            toast.className = "toast toast-" + type;
+
+            toast.innerText = message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+
+                toast.style.opacity = "0";
+
+                toast.style.transform = "translateX(120px)";
+
+                toast.style.transition = ".35s";
+
+            }, 2500);
+
+            setTimeout(() => {
+
+                toast.remove();
+
+            }, 2900);
+
+        }
+
     </script>
+    <div id="toast-container"></div>
 </body>
 
 </html>

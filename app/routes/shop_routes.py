@@ -570,12 +570,22 @@ def checkout_page():
         conn.close()
         return redirect("/cart")
 
+    cur.execute("""
+    select distinct products.shop_id from cart join products
+    on cart.product_id=products.id
+    where cart.user_id=%s
+    """,(session["user_id"],))
+    shop_id=cur.fetchone()["shop_id"]
+
+    payment=get_payment_methods(shop_id)
+    
+
     total = sum(float(item['total']) for item in items)
 
     cur.close()
     conn.close()
 
-    return render_template("store/checkout.html", items=items, total=total)
+    return render_template("store/checkout.html", items=items, total=total,payment=payment)
 
 
 @shop_bp.route("/checkout", methods=["POST"])
@@ -593,10 +603,11 @@ def checkout():
     customer_name = request.form.get("customer_name", "").strip()
     phone         = request.form.get("phone", "").strip()
     address       = request.form.get("address", "").strip()
+    payment_method = request.form.get("payment_method")
 
-    logger.info(f"[checkout] customer_name={customer_name!r}  phone={phone!r}  address={address!r}")
+    logger.info(f"[checkout] customer_name={customer_name!r}  phone={phone!r}  address={address!r} payment_method={payment_method!r}")
 
-    if not all([customer_name, phone, address]):
+    if not all([customer_name, phone, address, payment_method]):
         logger.warning("[checkout] ABORT — missing customer details")
         return "All customer details are required", 400
 
@@ -652,10 +663,11 @@ def checkout():
 
         # ── 5. Create order row ───────────────────────────────────
         cur.execute("""
-            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status,payment_method,payment_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, created_at
-        """, (shop_id, user_id, customer_name, phone, address, 'Pending'))
+        """, (shop_id, user_id, customer_name, phone, address, 'Pending', payment_method, 'Pending'))
+
         order_row = cur.fetchone()
         order_id  = order_row['id']
         logger.info(f"[checkout] order inserted — order_id={order_id}  created_at={order_row['created_at']}")
