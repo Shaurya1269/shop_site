@@ -480,6 +480,18 @@ def buy_now(product_id):
         flash("Sorry, this product is out of stock.", "danger")
         return redirect(f"/product/{product_id}")
 
+    # Get requested quantity
+    try:
+        quantity = int(request.form.get("quantity", 1))
+        if quantity < 1:
+            quantity = 1
+    except ValueError:
+        quantity = 1
+
+    # Check if quantity exceeds stock
+    if quantity > product["stock"]:
+        quantity = product["stock"]
+
     # If the cart has items from a different shop, clear them first
     # (Buy Now is an intentional single-product purchase — start fresh)
     cur.execute("""
@@ -501,13 +513,15 @@ def buy_now(product_id):
     existing_item = cur.fetchone()
 
     if existing_item:
-        if existing_item["quantity"] < product["stock"]:
-            cur.execute("UPDATE cart SET quantity = quantity + 1 WHERE id = %s", (existing_item["id"],))
+        new_qty = existing_item["quantity"] + quantity
+        if new_qty > product["stock"]:
+            new_qty = product["stock"]
+        cur.execute("UPDATE cart SET quantity = %s WHERE id = %s", (new_qty, existing_item["id"]))
     else:
         cur.execute("""
             INSERT INTO cart (user_id, product_id, quantity)
-            VALUES (%s, %s, 1)
-        """, (session["user_id"], product_id))
+            VALUES (%s, %s, %s)
+        """, (session["user_id"], product_id, quantity))
 
     conn.commit()
     cur.close()

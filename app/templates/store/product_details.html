@@ -92,29 +92,35 @@
                     {{ product.description or 'No description provided for this product.' }}
                 </div>
 
-                <!-- Add to Cart Form -->
-                <form action="/add-to-cart/{{ product.id }}" method="POST" class="premium-actions">
-                    <div class="premium-qty-row">
-                        <div class="premium-qty-label">Quantity</div>
-                        <div class="premium-qty-control">
-                            <button type="button" class="premium-qty-btn" onclick="decreaseQty()">-</button>
-                            <input type="number" id="qty-input" name="quantity" class="premium-qty-input" value="1"
-                                min="1" max="{{ product.stock if product.stock > 0 else 1 }}" readonly>
-                            <button type="button" class="premium-qty-btn" onclick="increaseQty()">+</button>
-                        </div>
+                <!-- Add to Cart / Buy Now Actions -->
+                <div class="premium-qty-row">
+                    <div class="premium-qty-label">Quantity</div>
+                    <div class="premium-qty-control">
+                        <button type="button" class="premium-qty-btn" onclick="decreaseQty()">-</button>
+                        <input type="number" id="qty-input" name="quantity" class="premium-qty-input" value="1"
+                            min="1" max="{{ product.stock if product.stock > 0 else 1 }}" readonly>
+                        <button type="button" class="premium-qty-btn" onclick="increaseQty()">+</button>
                     </div>
+                </div>
 
-                    <div class="premium-btn-group">
-                        <button type="submit" class="premium-btn premium-btn-primary" {% if product.stock==0
-                            %}disabled{% endif %}>
+                <div class="premium-btn-group">
+                    <!-- Add to Cart Form -->
+                    <form id="cart-form" action="/add-to-cart/{{ product.id }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="quantity" id="cart-qty-hidden" value="1">
+                        <button type="submit" class="premium-btn premium-btn-primary" style="width: 100%;" {% if product.stock==0 %}disabled{% endif %}>
                             Add to Cart
                         </button>
-                        <button type="button" class="premium-btn premium-btn-secondary" {% if product.stock==0
-                            %}disabled{% endif %}>
+                    </form>
+
+                    <!-- Buy Now Form -->
+                    <form id="buynow-form" action="/buy-now/{{ product.id }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="quantity" id="buynow-qty-hidden" value="1">
+                        <button type="submit" class="premium-btn premium-btn-secondary" style="width: 100%;" {% if product.stock==0 %}disabled{% endif %}>
                             Buy Now
                         </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+
 
             </div>
         </div>
@@ -177,6 +183,21 @@
                     qtyInput.value = current + 1;
                 }
             };
+
+            // Sync quantities on submit
+            const cartForm = document.getElementById('cart-form');
+            if (cartForm) {
+                cartForm.addEventListener('submit', function() {
+                    document.getElementById('cart-qty-hidden').value = qtyInput.value;
+                });
+            }
+
+            const buyNowForm = document.getElementById('buynow-form');
+            if (buyNowForm) {
+                buyNowForm.addEventListener('submit', function() {
+                    document.getElementById('buynow-qty-hidden').value = qtyInput.value;
+                });
+            }
 
             const modal = document.getElementById('lightbox-modal');
             window.openLightbox = function() {
