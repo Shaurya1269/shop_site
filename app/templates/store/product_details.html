@@ -5,188 +5,196 @@
 {% block content %}
 <div class="premium-container">
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div style="margin-bottom: 24px;">
-          {% for category, message in messages %}
-            <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: {% if category == 'success' %}#DCFCE7{% else %}#FEE2E2{% endif %}; color: {% if category == 'success' %}#16A34A{% else %}#DC2626{% endif %}; border: 1px solid {% if category == 'success' %}#BBF7D0{% else %}#FECACA{% endif %};">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
 
-    <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;color:#0f172a;text-decoration:none;font-weight:600;margin-bottom:24px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <a href="javascript:history.back()"
+        style="display:inline-flex;align-items:center;gap:8px;color:#0f172a;text-decoration:none;font-weight:600;margin-bottom:24px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
         Back
     </a>
 
     <div class="premium-breadcrumb">
-        <a href="/">Home</a> <span>/</span> 
-        <a href="/shop/{{ product.shop_slug }}">Shop</a> <span>/</span> 
+        <a href="/">Home</a> <span>/</span>
+        <a href="/shop/{{ product.shop_slug }}">Shop</a> <span>/</span>
         Product
     </div>
 
     <div class="premium-product-grid">
-        
+
         <!-- Left Column: Image -->
         <div class="glass-panel premium-image-wrapper" onclick="openLightbox()">
             {% if product.image_url %}
             <img src="{{ product.image_url }}" alt="{{ product.name }}" id="main-product-image">
             {% else %}
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21,15 16,10 5,21" />
+            </svg>
             {% endif %}
         </div>
 
         <!-- Right Column: Details -->
         <div>
             <h1 class="premium-title">{{ product.name }}</h1>
-            
+
             <!-- Ratings -->
             <div class="premium-rating">
                 <div class="premium-stars">
                     {% for i in range(1, 6) %}
-                        {% if i <= product.avg_rating|round %}★{% else %}☆{% endif %}
-                    {% endfor %}
+                    {% if i <= product.avg_rating|round %}★{% else %}☆{% endif %} {% endfor %} </div>
+                        <span class="premium-review-count">
+                            {% if product.avg_rating > 0 %}
+                            {{ "%.1f"|format(product.avg_rating) }} ({{ product.review_count }} Reviews)
+                            {% else %}
+                            No reviews yet
+                            {% endif %}
+                        </span>
                 </div>
-                <span class="premium-review-count">
-                    {% if product.avg_rating > 0 %}
-                        {{ "%.1f"|format(product.avg_rating) }} ({{ product.review_count }} Reviews)
-                    {% else %}
-                        No reviews yet
-                    {% endif %}
-                </span>
-            </div>
 
-            <!-- Price & Stock -->
-            <div class="premium-price-row">
-                <div class="premium-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
-                {% if product.stock > 0 %}
+                <!-- Price & Stock -->
+                <div class="premium-price-row">
+                    <div class="premium-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
+                    {% if product.stock > 0 %}
                     <div class="premium-stock in-stock">
                         <span style="margin-right:4px;">🟢</span> In Stock ({{ product.stock }})
                     </div>
-                {% else %}
+                    {% else %}
                     <div class="premium-stock out-of-stock">
                         <span style="margin-right:4px;">🔴</span> Out of Stock
                     </div>
-                {% endif %}
-            </div>
-
-            <!-- Seller Info -->
-            <div class="premium-seller-card glass-panel">
-                {% if product.logo_url %}
-                    <img src="{{ product.logo_url }}" class="premium-seller-logo" alt="{{ product.shop_name }}">
-                {% else %}
-                    <div class="premium-seller-logo" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </div>
-                {% endif %}
-                <div class="premium-seller-info">
-                    <div class="premium-seller-label">Sold by</div>
-                    <div class="premium-seller-name">{{ product.shop_name }}</div>
-                </div>
-                <a href="/shop/{{ product.shop_slug }}" class="premium-seller-btn">Visit Shop</a>
-            </div>
-
-            <!-- Description -->
-            <div class="premium-description">
-                {{ product.description or 'No description provided for this product.' }}
-            </div>
-
-            <!-- Add to Cart Form -->
-            <form action="/add-to-cart/{{ product.id }}" method="POST" class="premium-actions">
-                <div class="premium-qty-row">
-                    <div class="premium-qty-label">Quantity</div>
-                    <div class="premium-qty-control">
-                        <button type="button" class="premium-qty-btn" onclick="decreaseQty()">-</button>
-                        <input type="number" id="qty-input" name="quantity" class="premium-qty-input" value="1" min="1" max="{{ product.stock if product.stock > 0 else 1 }}" readonly>
-                        <button type="button" class="premium-qty-btn" onclick="increaseQty()">+</button>
-                    </div>
-                </div>
-
-                <div class="premium-btn-group">
-                    <button type="submit" class="premium-btn premium-btn-primary" {% if product.stock == 0 %}disabled{% endif %}>
-                        Add to Cart
-                    </button>
-                    <button type="button" class="premium-btn premium-btn-secondary" {% if product.stock == 0 %}disabled{% endif %} onclick="alert('Buy Now flow coming soon!')">
-                        Buy Now
-                    </button>
-                </div>
-            </form>
-
-        </div>
-    </div>
-
-    <!-- Related Products -->
-    {% if related_products %}
-    <div style="margin-top: 80px;">
-        <h2 class="premium-section-title">More from this Shop</h2>
-        <div class="product-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:24px;">
-            {% for rel_product in related_products %}
-            <a href="/product/{{ rel_product.id }}" class="product-card" style="text-decoration:none;">
-                <div class="product-image">
-                    {% if rel_product.image_url %}
-                    <img src="{{ rel_product.image_url }}" alt="{{ rel_product.name }}">
-                    {% else %}
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
                     {% endif %}
                 </div>
-                <div class="product-details" style="color:#0f172a;">
-                    <div class="product-name" style="font-weight:600;">{{ rel_product.name }}</div>
-                    <div class="product-price" style="font-weight:700;margin-top:8px;">&#8377;{{ "%.2f"|format(rel_product.price) }}</div>
+
+                <!-- Seller Info -->
+                <div class="premium-seller-card glass-panel">
+                    {% if product.logo_url %}
+                    <img src="{{ product.logo_url }}" class="premium-seller-logo" alt="{{ product.shop_name }}">
+                    {% else %}
+                    <div class="premium-seller-logo"
+                        style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="premium-seller-info">
+                        <div class="premium-seller-label">Sold by</div>
+                        <div class="premium-seller-name">{{ product.shop_name }}</div>
+                    </div>
+                    <a href="/shop/{{ product.shop_slug }}" class="premium-seller-btn">Visit Shop</a>
                 </div>
-            </a>
-            {% endfor %}
+
+                <!-- Description -->
+                <div class="premium-description">
+                    {{ product.description or 'No description provided for this product.' }}
+                </div>
+
+                <!-- Add to Cart Form -->
+                <form action="/add-to-cart/{{ product.id }}" method="POST" class="premium-actions">
+                    <div class="premium-qty-row">
+                        <div class="premium-qty-label">Quantity</div>
+                        <div class="premium-qty-control">
+                            <button type="button" class="premium-qty-btn" onclick="decreaseQty()">-</button>
+                            <input type="number" id="qty-input" name="quantity" class="premium-qty-input" value="1"
+                                min="1" max="{{ product.stock if product.stock > 0 else 1 }}" readonly>
+                            <button type="button" class="premium-qty-btn" onclick="increaseQty()">+</button>
+                        </div>
+                    </div>
+
+                    <div class="premium-btn-group">
+                        <button type="submit" class="premium-btn premium-btn-primary" {% if product.stock==0
+                            %}disabled{% endif %}>
+                            Add to Cart
+                        </button>
+                        <button type="button" class="premium-btn premium-btn-secondary" {% if product.stock==0
+                            %}disabled{% endif %}>
+                            Buy Now
+                        </button>
+                    </div>
+                </form>
+
+            </div>
         </div>
+
+        <!-- Related Products -->
+        {% if related_products %}
+        <div style="margin-top: 80px;">
+            <h2 class="premium-section-title">More from this Shop</h2>
+            <div class="product-grid"
+                style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:24px;">
+                {% for rel_product in related_products %}
+                <a href="/product/{{ rel_product.id }}" class="product-card" style="text-decoration:none;">
+                    <div class="product-image">
+                        {% if rel_product.image_url %}
+                        <img src="{{ rel_product.image_url }}" alt="{{ rel_product.name }}">
+                        {% else %}
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21,15 16,10 5,21" />
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="product-details" style="color:#0f172a;">
+                        <div class="product-name" style="font-weight:600;">{{ rel_product.name }}</div>
+                        <div class="product-price" style="font-weight:700;margin-top:8px;">&#8377;{{
+                            "%.2f"|format(rel_product.price) }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
     </div>
-    {% endif %}
 
-</div>
+    <!-- Lightbox Modal -->
+    <div class="premium-modal" id="lightbox-modal">
+        <button class="premium-modal-close" onclick="closeLightbox()">&times;</button>
+        {% if product.image_url %}
+        <img src="{{ product.image_url }}" class="premium-modal-content" id="lightbox-image">
+        {% endif %}
+    </div>
 
-<!-- Lightbox Modal -->
-<div class="premium-modal" id="lightbox-modal">
-    <button class="premium-modal-close" onclick="closeLightbox()">&times;</button>
-    {% if product.image_url %}
-    <img src="{{ product.image_url }}" class="premium-modal-content" id="lightbox-image">
-    {% endif %}
-</div>
+    <script>
+        (function() {
+            const qtyInput = document.getElementById('qty-input');
+            const maxStock = {{ product.stock if product.stock else 0 }};
 
-<script>
-    const qtyInput = document.getElementById('qty-input');
-    const maxStock = {{ product.stock if product.stock else 0 }};
+            window.decreaseQty = function() {
+                let current = parseInt(qtyInput.value);
+                if (current > 1) {
+                    qtyInput.value = current - 1;
+                }
+            };
 
-    function decreaseQty() {
-        let current = parseInt(qtyInput.value);
-        if (current > 1) {
-            qtyInput.value = current - 1;
-        }
-    }
+            window.increaseQty = function() {
+                let current = parseInt(qtyInput.value);
+                if (current < maxStock) {
+                    qtyInput.value = current + 1;
+                }
+            };
 
-    function increaseQty() {
-        let current = parseInt(qtyInput.value);
-        if (current < maxStock) {
-            qtyInput.value = current + 1;
-        }
-    }
+            const modal = document.getElementById('lightbox-modal');
+            window.openLightbox = function() {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
+            window.closeLightbox = function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            };
 
-    const modal = document.getElementById('lightbox-modal');
-    function openLightbox() {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeLightbox() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-    
-    // Close on click outside
-    modal.addEventListener('click', function(e) {
-        if(e.target === modal) {
-            closeLightbox();
-        }
-    });
-</script>
+            // Close on click outside
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeLightbox();
+                }
+            });
+        })();
+    </script>
 
-{% endblock %}
+    {% endblock %}

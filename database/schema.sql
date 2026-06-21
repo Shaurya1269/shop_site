@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS orders(
     customer_name TEXT NOT NULL,
     phone TEXT NOT NULL,
     address TEXT NOT NULL,
+    status TEXT DEFAULT 'Pending',
+    payment_method TEXT,
+    payment_status TEXT DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
@@ -73,7 +76,7 @@ CREATE TABLE IF NOT EXISTS reviews(
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(product_id, user_id)
 );
-DROP TABLE IF EXISTS payment_methods;
+-- payment_methods table (do NOT drop — would wipe all shop payment settings on restart)
 CREATE TABLE IF NOT EXISTS payment_methods(
     id serial primary key,
     shop_id integer not NULL references shops(id) on delete CASCADE,

@@ -8,7 +8,7 @@ from app.utils.db import get_db, get_cursor
 from app.utils.decorators import login_required
 from app.models.shop_model import create_shop
 import os
-from app.models.payment_model import *
+from app.models.payment_model import get_payment_methods, create_payment_method, update_payment_method
 
 logger = logging.getLogger(__name__)
 shop_bp = Blueprint('shop', __name__)
@@ -457,6 +457,65 @@ def add_to_cart(product_id=None):
     return redirect("/")
 
 
+@shop_bp.route("/buy-now/<int:product_id>", methods=["POST"])
+@login_required
+def buy_now(product_id):
+    """Add a single product to cart (clearing any cross-shop conflict) and go straight to checkout."""
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    # Fetch product
+    cur.execute("SELECT id, shop_id, stock FROM products WHERE id = %s", (product_id,))
+    product = cur.fetchone()
+
+    if not product:
+        cur.close()
+        conn.close()
+        flash("Product not found.", "danger")
+        return redirect(f"/product/{product_id}")
+
+    if product["stock"] <= 0:
+        cur.close()
+        conn.close()
+        flash("Sorry, this product is out of stock.", "danger")
+        return redirect(f"/product/{product_id}")
+
+    # If the cart has items from a different shop, clear them first
+    # (Buy Now is an intentional single-product purchase — start fresh)
+    cur.execute("""
+        SELECT DISTINCT products.shop_id
+        FROM cart
+        JOIN products ON cart.product_id = products.id
+        WHERE cart.user_id = %s
+    """, (session["user_id"],))
+    existing_shops = cur.fetchall()
+
+    if existing_shops and existing_shops[0]["shop_id"] != product["shop_id"]:
+        cur.execute("DELETE FROM cart WHERE user_id = %s", (session["user_id"],))
+
+    # Check if already in cart
+    cur.execute("""
+        SELECT id, quantity FROM cart
+        WHERE user_id = %s AND product_id = %s
+    """, (session["user_id"], product_id))
+    existing_item = cur.fetchone()
+
+    if existing_item:
+        if existing_item["quantity"] < product["stock"]:
+            cur.execute("UPDATE cart SET quantity = quantity + 1 WHERE id = %s", (existing_item["id"],))
+    else:
+        cur.execute("""
+            INSERT INTO cart (user_id, product_id, quantity)
+            VALUES (%s, %s, 1)
+        """, (session["user_id"], product_id))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/checkout-page")
+
+
 @shop_bp.route("/update-cart", methods=["POST"])
 @login_required
 def update_cart():
@@ -710,10 +769,7 @@ def checkout():
         logger.error(f"[checkout] EXCEPTION:\n{tb}")
         # Return the traceback in the response body so it's visible on the page
         # during development; replace with a friendly page in production.
-        return (
-            f"<pre>Checkout failed.\n\n{tb}</pre>",
-            500
-        )
+        return "Something went wrong processing your order. Please try again or contact support.", 500
 
 
 @shop_bp.route("/orders")

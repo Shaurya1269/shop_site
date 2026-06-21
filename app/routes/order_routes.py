@@ -57,45 +57,10 @@ def my_orders():
                 pass
         tb = traceback.format_exc()
         logger.error(f"[my_orders] EXCEPTION:\n{tb}")
-        return f"<pre>Error loading orders.\n\n{tb}</pre>", 500
+        return "Something went wrong loading your orders. Please try again later.", 500
 
 
-@order_bp.route("/debug-orders")
-def debug_orders():
-    """
-    Diagnostic endpoint — dumps all orders and order_items as JSON.
-    Safe to hit from the browser. Remove in production.
-    """
-    conn = get_db()
-    cur  = get_cursor(conn)
 
-    cur.execute("SELECT * FROM orders ORDER BY id DESC")
-    orders = [dict(row) for row in cur.fetchall()]
-
-    cur.execute("SELECT * FROM order_items ORDER BY id DESC")
-    items = [dict(row) for row in cur.fetchall()]
-
-    cur.close()
-    conn.close()
-
-    # Convert Decimal / datetime fields to str so they serialise cleanly
-    import json
-    from decimal import Decimal
-    from datetime import datetime
-
-    def default_serialiser(obj):
-        if isinstance(obj, Decimal):
-            return str(obj)
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        raise TypeError(f"Not serialisable: {type(obj)}")
-
-    payload = json.dumps(
-        {"orders": orders, "order_items": items},
-        default=default_serialiser,
-        indent=2
-    )
-    return payload, 200, {"Content-Type": "application/json"}
 
 @order_bp.route("/update-order-status/<int:order_id>/<status>", methods=["POST"])
 @login_required

@@ -105,11 +105,29 @@ def _run_schema():
     if not exists(
     select 1 from information_schema.columns
     where table_name='orders' and column_name='status')
-then
+    then
     alter table orders add column status varchar(20) default 'pending';
     end if;
-    end $$; """
-    )
+    end $$; """)
+
+    # migration 3: ensure payment_method and payment_status columns exist
+    cur.execute("""
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'orders' AND column_name = 'payment_method'
+        ) THEN
+            ALTER TABLE orders ADD COLUMN payment_method TEXT;
+        END IF;
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'orders' AND column_name = 'payment_status'
+        ) THEN
+            ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'Pending';
+        END IF;
+    END $$;
+    """)
 
     cur.execute("""
     do $$

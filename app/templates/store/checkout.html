@@ -56,7 +56,7 @@
                     {% if payment.upi_enabled %}
                     <label class="payment-card">
 
-                        <input type="radio" name="payment_method" value="UPI">
+                        <input type="radio" name="payment_method" value="UPI" required>
 
                         <div>
 
@@ -78,13 +78,19 @@
 
                         </div>
                     </label>
+                    <script>
+                        function copyUPI() {
+                            navigator.clipboard.writeText(document.getElementById("upi-id").innerText.trim());
+                            showToast("UPI ID copied!");
+                        }
+                    </script>
                     {% endif %}
 
 
                     {% if payment.qr_enabled %}
                     <label class="payment-card">
 
-                        <input type="radio" name="payment_method" value="QR">
+                        <input type="radio" name="payment_method" value="QR" required>
 
                         <div>
 
@@ -94,11 +100,7 @@
 
                             <div class="payment-details">
 
-                                <img src="{{ payment.qr_image_url }}" style="
-width:220px;
-border-radius:18px;
-margin-top:10px;
-">
+                                <img src="{{ payment.qr_image_url }}" alt="QR Code" style="width:220px;border-radius:18px;margin-top:10px;">
 
                             </div>
 
@@ -106,32 +108,25 @@ margin-top:10px;
 
                     </label>
                     {% endif %}
-                    <div class="payment-details">
-
-                        <strong id="phone-number">
-
-                            {{ payment.phone_number }}
-
-                        </strong>
-
-                        <button type="button" class="copy-btn" onclick="copyPhone()">
-
-                            Copy
-
-                        </button>
-
-                    </div>
-                    <script>function copyPhone() {
-
-                            navigator.clipboard.writeText(
-
-                                document.getElementById("phone-number").innerText
-
-                            );
-
+                    {% if payment.phone_enabled %}
+                    <label class="payment-card">
+                        <input type="radio" name="payment_method" value="Phone" required>
+                        <div>
+                            <h4>📞 Phone Number</h4>
+                            <p>Pay using any UPI application to this number.</p>
+                            <div class="payment-details">
+                                <strong id="phone-number">{{ payment.phone_number }}</strong>
+                                <button type="button" class="copy-btn" onclick="copyPhone()">Copy</button>
+                            </div>
+                        </div>
+                    </label>
+                    <script>
+                        function copyPhone() {
+                            navigator.clipboard.writeText(document.getElementById("phone-number").innerText);
                             showToast("Phone copied!");
-
-                        }</script>
+                        }
+                    </script>
+                    {% endif %}
 
                     {% if payment.cod_enabled %}
                     <label class="payment-card">
