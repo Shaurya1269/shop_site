@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Payment{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding:60px 20px;max-width:900px;">
+
+    <h1>Confirm Payment</h1>
+
+    <hr>
+
+    <h3>Delivery Details</h3>
+
+    <p><strong>Name:</strong> {{ customer_name }}</p>
+
+    <p><strong>Phone:</strong> {{ phone }}</p>
+
+    <p><strong>Address:</strong> {{ address }}</p>
+
+    <hr>
+
+    <h3>Payment Method</h3>
+
+    <p>{{ payment_method }}</p>
+
+    <hr>
+
+    <h3>Order Summary</h3>
+
+    {% for item in items %}
+
+    <p>
+
+        {{ item.name }}
+
+        × {{ item.quantity }}
+
+        —
+
+        ₹{{ "%.2f"|format(item.total) }}
+
+    </p>
+
+    {% endfor %}
+
+    <h2>Total : ₹{{ "%.2f"|format(total) }}</h2>
+
+    <form method="POST" action="/checkout" style="margin-top: 30px;">
+        <button type="submit" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; background-color: var(--color-primary); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Confirm & Place Order</button>
+        <a href="/checkout-page" style="margin-left: 15px; color: var(--color-text-secondary); text-decoration: underline;">Cancel</a>
+    </form>
+
+</div>
+
+{% endblock %}

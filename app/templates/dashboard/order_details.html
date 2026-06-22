@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>
+        Order #{{ order.id }}
+    </h1>
+
+    <hr>
+
+    <h2>
+        Customer
+    </h2>
+
+    <p>
+        <strong>Name:</strong>
+
+        {{ order.customer_name }}
+    </p>
+
+    <p>
+        <strong>Phone:</strong>
+
+        {{ order.phone }}
+    </p>
+
+    <p>
+        <strong>Address:</strong>
+
+        {{ order.address }}
+    </p>
+
+    <hr>
+
+    <h2>
+        Products
+    </h2>
+
+    {% for item in items %}
+
+    <div class="product-row">
+
+        {% if item.image_url %}
+        <img src="{{ item.image_url }}">
+        {% endif %}
+
+        <div>
+
+            <strong>
+
+                {{ item.name }}
+
+            </strong>
+
+            <br>
+
+            Quantity :
+
+            {{ item.quantity }}
+
+            <br>
+
+            ₹{{ item.price }}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+    <hr>
+
+    <h2>
+        Payment
+    </h2>
+
+    <p>
+
+        Method :
+
+        {{ order.payment_method }}
+
+    </p>
+
+    <p>
+
+        Status :
+
+        {{ order.payment_status }}
+
+    </p>
+
+    <hr>
+
+    <h2>
+
+        Order Status
+
+    </h2>
+
+    <p>
+
+    <form method="POST" action="/dashboard/order/{{ order.id }}/status">
+
+        <select name="status">
+
+            <option {% if order.status=="Pending" %}selected{% endif %}>
+                Pending
+            </option>
+
+            <option {% if order.status=="Processing" %}selected{% endif %}>
+                Processing
+            </option>
+
+            <option {% if order.status=="Ready" %}selected{% endif %}>
+                Ready
+            </option>
+
+            <option {% if order.status=="Delivered" %}selected{% endif %}>
+                Delivered
+            </option>
+
+            <option {% if order.status=="Cancelled" %}selected{% endif %}>
+                Cancelled
+            </option>
+
+        </select>
+
+        <button>
+
+            Update Status
+
+        </button>
+
+    </form>
+
+    </p>
+
+    {% endblock %}

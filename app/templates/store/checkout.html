@@ -11,7 +11,7 @@
     </div>
 
     {% if items %}
-    <form method="POST" action="/checkout">
+    <form method="POST" action="/payment">
         <div class="cart-grid">
 
             <!-- Delivery Form -->
@@ -144,6 +144,16 @@
                         <div>
                             <h4>Store Pickup</h4>
                             <p>Collect and pay at the shop.</p>
+                        </div>
+                    </label>
+                    {% endif %}
+
+                    {% if not payment or (not payment.razorpay_enabled and not payment.upi_enabled and not payment.qr_enabled and not payment.phone_enabled and not payment.cod_enabled and not payment.pickup_enabled) %}
+                    <label class="payment-card">
+                        <input type="radio" name="payment_method" value="COD" checked required>
+                        <div>
+                            <h4>💵 Cash on Delivery (Default)</h4>
+                            <p>Pay with cash on delivery (automatically enabled because the shop owner has not set up any custom payment methods).</p>
                         </div>
                     </label>
                     {% endif %}

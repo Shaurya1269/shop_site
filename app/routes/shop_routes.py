@@ -648,10 +648,15 @@ def checkout_page():
     on cart.product_id=products.id
     where cart.user_id=%s
     """,(session["user_id"],))
-    shop_id=cur.fetchone()["shop_id"]
+    shop_row = cur.fetchone()
+    shop_id = shop_row["shop_id"] if shop_row else None
 
-    payment=get_payment_methods(shop_id)
-    
+    payment = None
+    if shop_id is not None:
+        payment=get_payment_methods(shop_id)
+        if not payment:
+            create_payment_method(shop_id)
+            payment=get_payment_methods(shop_id)
 
     total = sum(float(item['total']) for item in items)
 
@@ -672,11 +677,17 @@ def checkout():
     user_id = session["user_id"]
     logger.info(f"[checkout] START — user_id={user_id}")
 
-    # ── 1. Collect customer details from form ─────────────────────
-    customer_name = request.form.get("customer_name", "").strip()
-    phone         = request.form.get("phone", "").strip()
-    address       = request.form.get("address", "").strip()
-    payment_method = request.form.get("payment_method")
+    # ── 1. Collect customer details from session ──────────────────
+    checkout_data=session.get("checkout_data")
+    if not checkout_data:
+        return redirect("/checkout-page")
+
+    customer_name = checkout_data.get("customer_name", "").strip()
+    phone         = checkout_data.get("phone", "").strip()
+    address       = checkout_data.get("address", "").strip()
+    payment_method = checkout_data.get("payment_method")
+    order_status  = checkout_data.get("order_status", "Pending")
+    payment_status = checkout_data.get("payment_status", "Pending")
 
     logger.info(f"[checkout] customer_name={customer_name!r}  phone={phone!r}  address={address!r} payment_method={payment_method!r}")
 
@@ -736,10 +747,10 @@ def checkout():
 
         # ── 5. Create order row ───────────────────────────────────
         cur.execute("""
-            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status,payment_method,payment_status)
+            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status, payment_method, payment_status)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, created_at
-        """, (shop_id, user_id, customer_name, phone, address, 'Pending', payment_method, 'Pending'))
+        """, (shop_id, user_id, customer_name, phone, address, order_status, payment_method, payment_status))
 
         order_row = cur.fetchone()
         order_id  = order_row['id']
@@ -763,10 +774,11 @@ def checkout():
 
         # ── 8. Commit everything atomically ───────────────────────
         conn.commit()
+        session.pop("checkout_data",None)
         cur.close()
         conn.close()
         logger.info(f"[checkout] SUCCESS — redirecting to /my-orders  order_id={order_id}")
-        return redirect("/my-orders")
+        return render_template("store/order_success.html",order_id=order_id)
 
     except Exception as exc:
         # Roll back the whole transaction so no partial data is left
@@ -997,3 +1009,158 @@ def payment_settings():
     cur.close()
     conn.close()
     return render_template("payment_settings.html", payment=payment)
+
+@shop_bp.route("/payment",methods=["POST"])
+@login_required
+def payment():
+    customer_name=request.form.get("customer_name")
+    phone=request.form.get("phone")
+    address=request.form.get("address")
+    payment_method=request.form.get("payment_method")
+
+    if payment_method == "COD":
+        order_status = "Pending"
+        payment_status = "Pending"
+    elif payment_method == "Pickup":
+        order_status = "Pending"
+        payment_status = "Pending"
+    elif payment_method in ["UPI", "QR", "Phone"]:
+        order_status = "Confirmed"
+        payment_status = "Awaiting Verification"
+    else:
+        order_status = "Confirmed"
+        payment_status = "Paid"
+
+    session["checkout_data"]={
+        "customer_name":customer_name,
+        "phone":phone,
+        "address":address,
+        "payment_method":payment_method,
+        "order_status":order_status,
+        "payment_status":payment_status
+    }
+    
+    conn=get_db()
+    cur=get_cursor(conn)
+
+    cur.execute("""
+        select 
+        products.id,
+        products.name,
+        products.price,
+        cart.quantity,
+        (products.price*cart.quantity) as total
+        from cart
+        join products
+        on cart.product_id=products.id
+        where cart.user_id=%s
+    """,(session['user_id'],))
+    
+    items = cur.fetchall()
+
+    if not items:
+        cur.close()
+        conn.close()
+        return redirect("/cart")
+
+    total = sum(float(item["total"]) for item in items)
+
+    #find the shop
+    cur.execute("""
+    select distinct products.shop_id from cart
+    join products
+    on cart.product_id=products.id
+    where cart.user_id=%s
+    """,(session["user_id"],))
+
+    shop=cur.fetchone()
+    cur.close()
+    conn.close()
+
+    return render_template("store/payment.html",
+        customer_name=customer_name,
+        phone=phone,
+        address=address,
+        payment_method=payment_method,
+        items=items,
+        total=total,
+        shop_id=shop["shop_id"])
+
+@shop_bp.route("/dashboard/order/<int:order_id>")
+@login_required
+def order_details(order_id):
+
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    # Make sure seller owns this order
+    cur.execute("""
+        SELECT
+            orders.*,
+            shops.shop_name
+        FROM orders
+        JOIN shops
+        ON orders.shop_id=shops.id
+        WHERE
+            orders.id=%s
+        AND
+            shops.user_id=%s
+    """,(order_id,session["user_id"]))
+
+    order = cur.fetchone()
+
+    if not order:
+        cur.close()
+        conn.close()
+        return "Order not found",404
+
+    cur.execute("""
+        SELECT
+            order_items.quantity,
+            order_items.price,
+            products.name,
+            products.image_url
+        FROM order_items
+        JOIN products
+        ON order_items.product_id=products.id
+        WHERE order_items.order_id=%s
+    """,(order_id,))
+
+    items = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "dashboard/order_details.html",
+        order=order,
+        items=items
+    )
+
+
+@shop_bp.route("/dashboard/order/<int:order_id>/status",methods=["POST"])
+@login_required
+def update_order_status(order_id):
+
+    status = request.form.get("status")
+
+    conn = get_db()
+    cur = get_cursor(conn)
+
+    cur.execute("""
+        UPDATE orders
+        SET status=%s
+        WHERE id=%s
+        AND shop_id IN (
+            SELECT id
+            FROM shops
+            WHERE user_id=%s
+        )
+    """,(status,order_id,session["user_id"]))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return redirect(f"/dashboard/order/{order_id}")
