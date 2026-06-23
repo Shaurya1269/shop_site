@@ -1,30 +1,26 @@
-from app.utils.db import get_db, get_cursor
+from app.utils.db import get_db_cursor
 import uuid
 
 
 def create_shop(user_id, shop_name, category=None, description=None):
     """Create a new shop for a user with a unique slug."""
-    conn = get_db()
-    cur = get_cursor(conn)
-
     slug = generate_slug(shop_name)
-    cur.execute("""
-        INSERT INTO shops (user_id, shop_name, slug, category, description)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING id
-    """, (user_id, shop_name, slug, category, description))
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+            INSERT INTO shops (user_id, shop_name, slug, category, description)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (user_id, shop_name, slug, category, description))
 
-    shop_id = cur.fetchone()['id']
+        shop_id = cur.fetchone()['id']
 
-    cur.execute("""
-    INSERT INTO payment_methods(shop_id)
-    VALUES(%s)
-    """,(shop_id,))
-    conn.commit()
-    cur.close()
-    conn.close()
+        cur.execute("""
+        INSERT INTO payment_methods(shop_id)
+        VALUES(%s)
+        """,(shop_id,))
 
     return {'id': shop_id, 'shop_name': shop_name, 'slug': slug}
+
 
 
 def generate_slug(name):

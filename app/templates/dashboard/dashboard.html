@@ -295,6 +295,7 @@
                         </a>
                         <form action="/product/{{ product.id }}/delete" method="POST"
                             onsubmit="return confirm('Delete this product?');" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="dash-ui-btn-icon dash-ui-btn-icon-danger">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">

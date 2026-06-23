@@ -71,15 +71,19 @@
             {% if is_shop_owner %}
             <div style="display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid var(--color-border);padding-top:16px;">
                 <form action="/update-order-status/{{ order.id }}/Accepted" method="post" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn" style="background:#E3F2FD;color:#1565C0;">Accept</button>
                 </form>
                 <form action="/update-order-status/{{ order.id }}/Shipped" method="post" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline">Mark Shipped</button>
                 </form>
                 <form action="/update-order-status/{{ order.id }}/Delivered" method="post" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn" style="background:#E8F5E9;color:#2E7D32;">Mark Delivered</button>
                 </form>
                 <form action="/update-order-status/{{ order.id }}/Cancelled" method="post" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn" style="background:#FFEBEE;color:#C62828;">Cancel</button>
                 </form>
             </div>

@@ -106,6 +106,7 @@
                 <div class="premium-btn-group">
                     <!-- Add to Cart Form -->
                     <form id="cart-form" action="/add-to-cart/{{ product.id }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="quantity" id="cart-qty-hidden" value="1">
                         <button type="submit" class="premium-btn premium-btn-primary" style="width: 100%;" {% if product.stock==0 %}disabled{% endif %}>
                             Add to Cart
@@ -114,6 +115,7 @@
 
                     <!-- Buy Now Form -->
                     <form id="buynow-form" action="/buy-now/{{ product.id }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="quantity" id="buynow-qty-hidden" value="1">
                         <button type="submit" class="premium-btn premium-btn-secondary" style="width: 100%;" {% if product.stock==0 %}disabled{% endif %}>
                             Buy Now

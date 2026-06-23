@@ -31,6 +31,7 @@
                         <!-- Quantity Controls -->
                         <div class="qty-controls">
                             <form action="/update-cart" method="POST" style="display:contents;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
                                 <input type="hidden" name="action" value="decrease">
                                 <button type="submit" class="qty-btn">&minus;</button>
@@ -45,6 +46,7 @@
 
                         <!-- Remove Action -->
                         <form action="/update-cart" method="POST" style="display:contents;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
                             <input type="hidden" name="action" value="remove">
                             <button type="submit" style="background:none;border:none;color:var(--color-text-secondary);font-size:14px;font-weight:500;text-decoration:underline;cursor:pointer;">Remove</button>
@@ -61,6 +63,7 @@
             
             <div style="padding:24px 0;">
                 <form action="/clear-cart" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline">Clear Cart</button>
                 </form>
             </div>

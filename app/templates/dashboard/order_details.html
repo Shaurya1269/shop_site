@@ -103,6 +103,7 @@
     <p>
 
     <form method="POST" action="/dashboard/order/{{ order.id }}/status">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <select name="status">
 

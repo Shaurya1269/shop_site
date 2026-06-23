@@ -5,6 +5,7 @@
 <h2>Shop Settings</h2>
 
 <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <label>Shop Name</label><br>
     <input type="text" name="shop_name" value="{{ shop.shop_name }}" required>

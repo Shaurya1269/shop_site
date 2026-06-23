@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Create Shop — ShopLocal{% endblock %}
+{% block title %} Shop — ShopLocal{% endblock %}
 
 {% block content %}
 
@@ -14,20 +14,23 @@
 
         <div class="card">
             <form action="/create-shop" method="POST">
-                
+
                 <div class="form-group" style="margin-bottom:16px;">
                     <label for="shop_name">Shop Name</label>
-                    <input type="text" id="shop_name" name="shop_name" placeholder="Enter your business name" required class="form-control" style="width:100%;padding:10px;margin-top:8px;">
+                    <input type="text" id="shop_name" name="shop_name" placeholder="Enter your business name" required
+                        class="form-control" style="width:100%;padding:10px;margin-top:8px;">
                 </div>
 
                 <div class="form-group" style="margin-bottom:16px;">
                     <label for="category">Category</label>
-                    <input type="text" id="category" name="category" placeholder="e.g. Clothing, Electronics" class="form-control" style="width:100%;padding:10px;margin-top:8px;">
+                    <input type="text" id="category" name="category" placeholder="e.g. Clothing, Electronics"
+                        class="form-control" style="width:100%;padding:10px;margin-top:8px;">
                 </div>
 
                 <div class="form-group" style="margin-bottom:16px;">
                     <label for="description">Description</label>
-                    <textarea id="description" name="description" placeholder="What does your shop sell?" rows="3" class="form-control" style="width:100%;padding:10px;margin-top:8px;"></textarea>
+                    <textarea id="description" name="description" placeholder="What does your shop sell?" rows="3"
+                        class="form-control" style="width:100%;padding:10px;margin-top:8px;"></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px;padding:12px;">

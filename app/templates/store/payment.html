@@ -47,6 +47,7 @@
     <h2>Total : ₹{{ "%.2f"|format(total) }}</h2>
 
     <form method="POST" action="/checkout" style="margin-top: 30px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; background-color: var(--color-primary); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Confirm & Place Order</button>
         <a href="/checkout-page" style="margin-left: 15px; color: var(--color-text-secondary); text-decoration: underline;">Cancel</a>
     </form>

@@ -4,11 +4,12 @@ import logging
 import traceback
 from flask import Blueprint, render_template, session, redirect, request, flash
 from app.models.product_model import create_product
-from app.utils.db import get_db, get_cursor
+from app.utils.db import get_db_cursor
 from app.utils.decorators import login_required
 from app.models.shop_model import create_shop
 import os
 from app.models.payment_model import get_payment_methods, create_payment_method, update_payment_method
+from app.utils.validators import validate_shop_name, validate_product_name, validate_price, validate_stock, validate_phone, validate_upi
 
 logger = logging.getLogger(__name__)
 shop_bp = Blueprint('shop', __name__)
@@ -221,26 +222,26 @@ def dashboard():
 @shop_bp.route("/shop-settings", methods=["GET", "POST"])
 @login_required
 def shop_settings():
-    conn=get_db()
-    cur=get_cursor(conn)
-
-    cur.execute(
-        "Select * from shops where user_id=%s",(session["user_id"],)
-    )
-    shop=cur.fetchone()
+    with get_db_cursor() as (conn, cur):
+        cur.execute(
+            "Select * from shops where user_id=%s",(session["user_id"],)
+        )
+        shop=cur.fetchone()
     if not shop:
-        cur.close()
-        conn.close()
         return "shop not found",404
 
     if request.method=="POST":
-        shop_name = request.form.get("shop_name")
-        description = request.form.get("description")
+        shop_name = request.form.get("shop_name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not validate_shop_name(shop_name):
+            flash("Invalid shop name (must be between 1 and 100 characters).", "danger")
+            return render_template("dashboard/shop_settings.html",shop=shop)
 
         logo_url = shop["logo_url"]
         banner_url = shop["banner_url"]
 
-    #upload logo
+        #upload logo
         if "logo" in request.files and request.files["logo"].filename != "":
             result=uploader.upload(
                 request.files['logo'],
@@ -248,7 +249,7 @@ def shop_settings():
             )
             logo_url=result["secure_url"]
 
-    #upload banner
+        #upload banner
         if "banner" in request.files and request.files["banner"].filename != "":
             result=uploader.upload(
                 request.files['banner'],
@@ -256,22 +257,17 @@ def shop_settings():
             )
             banner_url=result["secure_url"]
     
-        cur.execute("""
-        update shops set shop_name=%s,
-        description=%s,
-        logo_url=%s,
-        banner_url=%s
-        where id=%s
-    """,(shop_name,description,logo_url,banner_url,shop["id"]))
+        with get_db_cursor() as (conn, cur):
+            cur.execute("""
+            update shops set shop_name=%s,
+            description=%s,
+            logo_url=%s,
+            banner_url=%s
+            where id=%s
+        """,(shop_name,description,logo_url,banner_url,shop["id"]))
 
-    
-        conn.commit()
-        cur.close()
-        conn.close()
         return redirect("/dashboard")
 
-    cur.close()
-    conn.close()
     return render_template("dashboard/shop_settings.html",shop=shop)    
 
 
@@ -279,11 +275,14 @@ def shop_settings():
 @login_required
 def create_shop_page():
     if request.method == 'POST':
-        shop_name = request.form.get("shop_name")
-        category = request.form.get("category")
-        description = request.form.get("description")
-        if not shop_name:
-            return "Shop name is required", 400
+        shop_name = request.form.get("shop_name", "").strip()
+        category = request.form.get("category", "").strip()
+        description = request.form.get("description", "").strip()
+        
+        if not validate_shop_name(shop_name):
+            flash("Invalid shop name (must be between 1 and 100 characters).", "danger")
+            return render_template("dashboard/create_shop.html")
+
         create_shop(session['user_id'], shop_name, category, description)
         return redirect("/dashboard")
 
@@ -320,61 +319,53 @@ def view_store(slug):
 def add_product():
     user_id = session.get("user_id")
 
-    conn = get_db()
-    cur = get_cursor(conn)
-    cur.execute("SELECT id FROM shops WHERE user_id = %s", (user_id,))
-    shop = cur.fetchone()
+    with get_db_cursor() as (conn, cur):
+        cur.execute("SELECT id FROM shops WHERE user_id = %s", (user_id,))
+        shop = cur.fetchone()
 
     if not shop:
-        cur.close()
-        conn.close()
         return "Create a shop first", 400
 
     shop_id = shop['id']
 
     if request.method == 'POST':
-        name = request.form.get("name")
+        name = request.form.get("name", "").strip()
         price = request.form.get('price')
-        description = request.form.get('description')
+        description = request.form.get('description', '').strip()
         stock = request.form.get("stock")
-        image_url=request.form.get("image_url")
+        image_url = request.form.get("image_url")
 
+        if not validate_product_name(name):
+            flash("Invalid product name (must be between 1 and 150 characters).", "danger")
+            return render_template("dashboard/add_product.html")
 
-        if not name or not price:
-            cur.close()
-            conn.close()
-            return "Name and price are required", 400
+        if not validate_price(price):
+            flash("Price must be a non-negative number.", "danger")
+            return render_template("dashboard/add_product.html")
 
-        try:
-            price = float(price)
-            stock = int(stock) if stock is not None else 0
-        except ValueError:
-            cur.close()
-            conn.close()
-            return "Price and stock must be numbers", 400
+        if not validate_stock(stock):
+            flash("Stock must be a non-negative integer.", "danger")
+            return render_template("dashboard/add_product.html")
 
+        price = float(price)
+        stock = int(stock)
         
         if "image" in request.files and request.files['image'].filename !="":
             file=request.files["image"]
-            # upload to cloudniary 
             result= uploader.upload(
                 file,
                 folder="products",
             )
             image_url=result.get("secure_url")
 
-        cur.execute(
-            """INSERT INTO products (shop_id, name, price, description, stock, image_url) 
-               VALUES (%s, %s, %s, %s, %s, %s)""",
-            (shop_id, name, price, description, stock, image_url)
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
+        with get_db_cursor() as (conn, cur):
+            cur.execute(
+                """INSERT INTO products (shop_id, name, price, description, stock, image_url) 
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (shop_id, name, price, description, stock, image_url)
+            )
         return redirect("/dashboard")
 
-    cur.close()
-    conn.close()
     return render_template("dashboard/add_product.html")
 
 
@@ -954,16 +945,13 @@ def submit_review(product_id):
 @shop_bp.route("/payment-settings", methods=["GET", "POST"])
 @login_required
 def payment_settings():
-    conn = get_db()
-    cur = get_cursor(conn)
-    cur.execute("""
-    select id from shops where user_id=%s
-    """, (session['user_id'],))
-    shop = cur.fetchone()
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+        select id from shops where user_id=%s
+        """, (session['user_id'],))
+        shop = cur.fetchone()
 
     if not shop:
-        cur.close()
-        conn.close()
         return "Shop not found", 404
 
     payment = get_payment_methods(shop['id'])
@@ -979,8 +967,16 @@ def payment_settings():
         cod_enabled = "cod_enabled" in request.form
         pickup_enabled = "pickup_enabled" in request.form
 
-        upi_id = request.form.get("upi_id")
-        phone_number = request.form.get("phone_number")
+        upi_id = request.form.get("upi_id", "").strip()
+        phone_number = request.form.get("phone_number", "").strip()
+
+        if upi_enabled and not validate_upi(upi_id):
+            flash("Invalid UPI ID format.", "danger")
+            return render_template("payment_settings.html", payment=payment)
+
+        if phone_enabled and not validate_phone(phone_number):
+            flash("Invalid phone number format (must be 10-15 digits).", "danger")
+            return render_template("payment_settings.html", payment=payment)
 
         qr_image_url = payment.get("qr_image_url") if payment else None
 
@@ -1002,21 +998,27 @@ def payment_settings():
         )
 
         flash("Payment methods updated successfully!", "success")
-        cur.close()
-        conn.close()
         return redirect("/dashboard")
     
-    cur.close()
-    conn.close()
     return render_template("payment_settings.html", payment=payment)
 
 @shop_bp.route("/payment",methods=["POST"])
 @login_required
 def payment():
-    customer_name=request.form.get("customer_name")
-    phone=request.form.get("phone")
-    address=request.form.get("address")
-    payment_method=request.form.get("payment_method")
+    customer_name = request.form.get("customer_name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    address = request.form.get("address", "").strip()
+    payment_method = request.form.get("payment_method")
+
+    if not customer_name:
+        flash("Name is required.", "danger")
+        return redirect("/checkout-page")
+    if not validate_phone(phone):
+        flash("Invalid phone number format (must be 10-15 digits).", "danger")
+        return redirect("/checkout-page")
+    if not address:
+        flash("Delivery address is required.", "danger")
+        return redirect("/checkout-page")
 
     if payment_method == "COD":
         order_status = "Pending"
@@ -1040,42 +1042,34 @@ def payment():
         "payment_status":payment_status
     }
     
-    conn=get_db()
-    cur=get_cursor(conn)
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+            select 
+            products.id,
+            products.name,
+            products.price,
+            cart.quantity,
+            (products.price*cart.quantity) as total
+            from cart
+            join products
+            on cart.product_id=products.id
+            where cart.user_id=%s
+        """,(session['user_id'],))
+        items = cur.fetchall()
 
-    cur.execute("""
-        select 
-        products.id,
-        products.name,
-        products.price,
-        cart.quantity,
-        (products.price*cart.quantity) as total
-        from cart
+        if not items:
+            return redirect("/cart")
+
+        total = sum(float(item["total"]) for item in items)
+
+        #find the shop
+        cur.execute("""
+        select distinct products.shop_id from cart
         join products
         on cart.product_id=products.id
         where cart.user_id=%s
-    """,(session['user_id'],))
-    
-    items = cur.fetchall()
-
-    if not items:
-        cur.close()
-        conn.close()
-        return redirect("/cart")
-
-    total = sum(float(item["total"]) for item in items)
-
-    #find the shop
-    cur.execute("""
-    select distinct products.shop_id from cart
-    join products
-    on cart.product_id=products.id
-    where cart.user_id=%s
-    """,(session["user_id"],))
-
-    shop=cur.fetchone()
-    cur.close()
-    conn.close()
+        """,(session["user_id"],))
+        shop = cur.fetchone()
 
     return render_template("store/payment.html",
         customer_name=customer_name,
@@ -1089,47 +1083,37 @@ def payment():
 @shop_bp.route("/dashboard/order/<int:order_id>")
 @login_required
 def order_details(order_id):
+    with get_db_cursor() as (conn, cur):
+        # Make sure seller owns this order
+        cur.execute("""
+            SELECT
+                orders.*,
+                shops.shop_name
+            FROM orders
+            JOIN shops
+            ON orders.shop_id=shops.id
+            WHERE
+                orders.id=%s
+            AND
+                shops.user_id=%s
+        """,(order_id,session["user_id"]))
+        order = cur.fetchone()
 
-    conn = get_db()
-    cur = get_cursor(conn)
+        if not order:
+            return "Order not found",404
 
-    # Make sure seller owns this order
-    cur.execute("""
-        SELECT
-            orders.*,
-            shops.shop_name
-        FROM orders
-        JOIN shops
-        ON orders.shop_id=shops.id
-        WHERE
-            orders.id=%s
-        AND
-            shops.user_id=%s
-    """,(order_id,session["user_id"]))
-
-    order = cur.fetchone()
-
-    if not order:
-        cur.close()
-        conn.close()
-        return "Order not found",404
-
-    cur.execute("""
-        SELECT
-            order_items.quantity,
-            order_items.price,
-            products.name,
-            products.image_url
-        FROM order_items
-        JOIN products
-        ON order_items.product_id=products.id
-        WHERE order_items.order_id=%s
-    """,(order_id,))
-
-    items = cur.fetchall()
-
-    cur.close()
-    conn.close()
+        cur.execute("""
+            SELECT
+                order_items.quantity,
+                order_items.price,
+                products.name,
+                products.image_url
+            FROM order_items
+            JOIN products
+            ON order_items.product_id=products.id
+            WHERE order_items.order_id=%s
+        """,(order_id,))
+        items = cur.fetchall()
 
     return render_template(
         "dashboard/order_details.html",
@@ -1140,27 +1124,19 @@ def order_details(order_id):
 
 @shop_bp.route("/dashboard/order/<int:order_id>/status",methods=["POST"])
 @login_required
-def update_order_status(order_id):
-
+def update_order_status_dashboard(order_id):
     status = request.form.get("status")
 
-    conn = get_db()
-    cur = get_cursor(conn)
-
-    cur.execute("""
-        UPDATE orders
-        SET status=%s
-        WHERE id=%s
-        AND shop_id IN (
-            SELECT id
-            FROM shops
-            WHERE user_id=%s
-        )
-    """,(status,order_id,session["user_id"]))
-
-    conn.commit()
-
-    cur.close()
-    conn.close()
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+            UPDATE orders
+            SET status=%s
+            WHERE id=%s
+            AND shop_id IN (
+                SELECT id
+                FROM shops
+                WHERE user_id=%s
+            )
+        """,(status,order_id,session["user_id"]))
 
     return redirect(f"/dashboard/order/{order_id}")

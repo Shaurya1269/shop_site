@@ -30,9 +30,29 @@ def create_app():
         secret = secrets.token_hex(32)
     app.secret_key = secret
 
+    # Session Cookie Security
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    env_debug = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1", "yes")
+    app.config["SESSION_COOKIE_SECURE"] = not env_debug
+
+    # CSRF Protection
+    from flask_wtf.csrf import CSRFProtect
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+
     # Enable structured logging
-    logging.basicConfig(level=logging.INFO)
+    from logging.handlers import RotatingFileHandler
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+    file_handler = RotatingFileHandler("logs/app.log", maxBytes=5*1024*1024, backupCount=5)
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s')
+    file_handler.setFormatter(formatter)
+    app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
+    logging.getLogger().addHandler(file_handler)
+    logging.getLogger().setLevel(logging.INFO)
 
     # Auto-create database tables on startup
     _init_db(app)

@@ -100,7 +100,8 @@
 
                             <div class="payment-details">
 
-                                <img src="{{ payment.qr_image_url }}" alt="QR Code" style="width:220px;border-radius:18px;margin-top:10px;">
+                                <img src="{{ payment.qr_image_url }}" alt="QR Code"
+                                    style="width:220px;border-radius:18px;margin-top:10px;">
 
                             </div>
 
@@ -148,16 +149,6 @@
                     </label>
                     {% endif %}
 
-                    {% if not payment or (not payment.razorpay_enabled and not payment.upi_enabled and not payment.qr_enabled and not payment.phone_enabled and not payment.cod_enabled and not payment.pickup_enabled) %}
-                    <label class="payment-card">
-                        <input type="radio" name="payment_method" value="COD" checked required>
-                        <div>
-                            <h4>💵 Cash on Delivery (Default)</h4>
-                            <p>Pay with cash on delivery (automatically enabled because the shop owner has not set up any custom payment methods).</p>
-                        </div>
-                    </label>
-                    {% endif %}
-
                 </div>
 
             </div>
@@ -183,7 +174,8 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block"
-                    style="margin-top:32px;padding:16px;font-size:16px;">Place Order</button>
+                    style="margin-top:32px;padding:16px;font-size:16px;" id="place-order-btn" disabled>Place
+                    Order</button>
                 <a href="/cart"
                     style="display:block;text-align:center;margin-top:16px;font-size:14px;color:var(--color-text-secondary);text-decoration:underline;">Return
                     to Cart</a>
@@ -206,5 +198,15 @@
     {% endif %}
 
 </div>
+
+<script>
+    const radios = document.querySelectorAll('input[name="payment_method"]');
+    const btn = document.getElementById("place-order-btn");
+    radios.forEach(radio => {
+        radio.addEventListener("change", () => {
+            btn.disabled = false;
+        });
+    });
+</script>
 
 {% endblock %}

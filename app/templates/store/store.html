@@ -207,6 +207,7 @@
                 <div class="product-price">&#8377;{{ "%.2f"|format(product.price) }}</div>
                 
                 <form action="/add-to-cart" method="POST" style="margin-top:auto;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="product_id" value="{{ product.id }}">
                     <button type="submit" class="btn-add" {% if product.stock is defined and product.stock == 0 %}disabled{% endif %}>
                         {% if product.stock is defined and product.stock == 0 %}Out of Stock{% else %}Add to Cart{% endif %}
