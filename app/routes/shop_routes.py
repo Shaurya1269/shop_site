@@ -4,7 +4,7 @@ import logging
 import traceback
 from flask import Blueprint, render_template, session, redirect, request, flash
 from app.models.product_model import create_product
-from app.utils.db import get_db_cursor
+from app.utils.db import get_db_cursor, get_db, get_cursor, release_db
 from app.utils.decorators import login_required
 from app.models.shop_model import create_shop
 import os
@@ -204,6 +204,7 @@ def dashboard():
         cur.execute("""
             SELECT orders.id, orders.user_id, orders.customer_name, orders.phone,
                    orders.address, orders.status, orders.created_at,
+                   orders.payment_method, orders.payment_status,
                    COALESCE(SUM(order_items.quantity * order_items.price), 0) AS total
             FROM orders
             LEFT JOIN order_items ON order_items.order_id = orders.id
@@ -657,136 +658,6 @@ def checkout_page():
     return render_template("store/checkout.html", items=items, total=total,payment=payment)
 
 
-@shop_bp.route("/checkout", methods=["POST"])
-@login_required
-def checkout():
-    """
-    Process checkout. All DB work uses a SINGLE connection so that
-    the entire operation is one atomic transaction. If anything fails
-    the whole thing is rolled back cleanly.
-    """
-    user_id = session["user_id"]
-    logger.info(f"[checkout] START — user_id={user_id}")
-
-    # ── 1. Collect customer details from session ──────────────────
-    checkout_data=session.get("checkout_data")
-    if not checkout_data:
-        return redirect("/checkout-page")
-
-    customer_name = checkout_data.get("customer_name", "").strip()
-    phone         = checkout_data.get("phone", "").strip()
-    address       = checkout_data.get("address", "").strip()
-    payment_method = checkout_data.get("payment_method")
-    order_status  = checkout_data.get("order_status", "Pending")
-    payment_status = checkout_data.get("payment_status", "Pending")
-
-    logger.info(f"[checkout] customer_name={customer_name!r}  phone={phone!r}  address={address!r} payment_method={payment_method!r}")
-
-    if not all([customer_name, phone, address, payment_method]):
-        logger.warning("[checkout] ABORT — missing customer details")
-        return "All customer details are required", 400
-
-    # ── 2. Open ONE connection for the entire transaction ─────────
-    conn = None
-    try:
-        conn = get_db()
-        cur  = get_cursor(conn)
-
-        # ── 3. Validate cart — must be non-empty, single shop ─────
-        cur.execute("""
-            SELECT DISTINCT products.shop_id
-            FROM cart
-            JOIN products ON cart.product_id = products.id
-            WHERE cart.user_id = %s
-        """, (user_id,))
-        shops = cur.fetchall()
-        logger.info(f"[checkout] shops in cart: {[s['shop_id'] for s in shops]}")
-
-        if len(shops) == 0:
-            cur.close(); conn.close()
-            return "Your cart is empty", 400
-        if len(shops) > 1:
-            cur.close(); conn.close()
-            return "You can only order from one shop at a time", 400
-
-        shop_id = shops[0]['shop_id']
-        logger.info(f"[checkout] shop_id={shop_id}")
-
-        # ── 4. Fetch cart items ───────────────────────────────────
-        cur.execute("""
-            SELECT cart.id     AS cart_id,
-                   products.id AS product_id,
-                   products.price,
-                   products.stock,
-                   products.name AS product_name,
-                   cart.quantity
-            FROM cart
-            JOIN products ON cart.product_id = products.id
-            WHERE cart.user_id = %s
-        """, (user_id,))
-        cart_items = cur.fetchall()
-        logger.info(f"[checkout] cart_items count={len(cart_items)}  items={[dict(i) for i in cart_items]}")
-
-        if not cart_items:
-            cur.close(); conn.close()
-            return "Cart is empty", 400
-
-        for item in cart_items:
-            if item['quantity'] > item['stock']:
-                cur.close(); conn.close()
-                return f"Not enough stock for product '{item['product_name']}'. Only {item['stock']} left.", 400
-
-        # ── 5. Create order row ───────────────────────────────────
-        cur.execute("""
-            INSERT INTO orders (shop_id, user_id, customer_name, phone, address, status, payment_method, payment_status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, created_at
-        """, (shop_id, user_id, customer_name, phone, address, order_status, payment_method, payment_status))
-
-        order_row = cur.fetchone()
-        order_id  = order_row['id']
-        logger.info(f"[checkout] order inserted — order_id={order_id}  created_at={order_row['created_at']}")
-
-        # ── 6. Insert order items ─────────────────────────────────
-        for item in cart_items:
-            price = float(item['price'])
-            cur.execute("""
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES (%s, %s, %s, %s)
-            """, (order_id, item['product_id'], item['quantity'], price))
-
-            cur.execute("""update products set stock=stock -  %s where id=%s""",(item['quantity'],item['product_id']))
-
-            logger.info(f"[checkout] order_item inserted — product_id={item['product_id']}  qty={item['quantity']}  price={price}")
-
-        # ── 7. Clear the cart ─────────────────────────────────────
-        cur.execute("DELETE FROM cart WHERE user_id = %s", (user_id,))
-        logger.info(f"[checkout] cart cleared for user_id={user_id}")
-
-        # ── 8. Commit everything atomically ───────────────────────
-        conn.commit()
-        session.pop("checkout_data",None)
-        cur.close()
-        conn.close()
-        logger.info(f"[checkout] SUCCESS — redirecting to /my-orders  order_id={order_id}")
-        return render_template("store/order_success.html",order_id=order_id)
-
-    except Exception as exc:
-        # Roll back the whole transaction so no partial data is left
-        if conn:
-            try:
-                conn.rollback()
-            except Exception:
-                pass
-            try:
-                conn.close()
-            except Exception:
-                pass
-        tb = traceback.format_exc()
-        logger.error(f"[checkout] EXCEPTION:\n{tb}")
-        # Return the traceback in the response body so it's visible on the page
-        # during development; replace with a friendly page in production.
-        return "Something went wrong processing your order. Please try again or contact support.", 500
 
 
 @shop_bp.route("/orders")
@@ -1002,83 +873,7 @@ def payment_settings():
     
     return render_template("payment_settings.html", payment=payment)
 
-@shop_bp.route("/payment",methods=["POST"])
-@login_required
-def payment():
-    customer_name = request.form.get("customer_name", "").strip()
-    phone = request.form.get("phone", "").strip()
-    address = request.form.get("address", "").strip()
-    payment_method = request.form.get("payment_method")
 
-    if not customer_name:
-        flash("Name is required.", "danger")
-        return redirect("/checkout-page")
-    if not validate_phone(phone):
-        flash("Invalid phone number format (must be 10-15 digits).", "danger")
-        return redirect("/checkout-page")
-    if not address:
-        flash("Delivery address is required.", "danger")
-        return redirect("/checkout-page")
-
-    if payment_method == "COD":
-        order_status = "Pending"
-        payment_status = "Pending"
-    elif payment_method == "Pickup":
-        order_status = "Pending"
-        payment_status = "Pending"
-    elif payment_method in ["UPI", "QR", "Phone"]:
-        order_status = "Confirmed"
-        payment_status = "Awaiting Verification"
-    else:
-        order_status = "Confirmed"
-        payment_status = "Paid"
-
-    session["checkout_data"]={
-        "customer_name":customer_name,
-        "phone":phone,
-        "address":address,
-        "payment_method":payment_method,
-        "order_status":order_status,
-        "payment_status":payment_status
-    }
-    
-    with get_db_cursor() as (conn, cur):
-        cur.execute("""
-            select 
-            products.id,
-            products.name,
-            products.price,
-            cart.quantity,
-            (products.price*cart.quantity) as total
-            from cart
-            join products
-            on cart.product_id=products.id
-            where cart.user_id=%s
-        """,(session['user_id'],))
-        items = cur.fetchall()
-
-        if not items:
-            return redirect("/cart")
-
-        total = sum(float(item["total"]) for item in items)
-
-        #find the shop
-        cur.execute("""
-        select distinct products.shop_id from cart
-        join products
-        on cart.product_id=products.id
-        where cart.user_id=%s
-        """,(session["user_id"],))
-        shop = cur.fetchone()
-
-    return render_template("store/payment.html",
-        customer_name=customer_name,
-        phone=phone,
-        address=address,
-        payment_method=payment_method,
-        items=items,
-        total=total,
-        shop_id=shop["shop_id"])
 
 @shop_bp.route("/dashboard/order/<int:order_id>")
 @login_required

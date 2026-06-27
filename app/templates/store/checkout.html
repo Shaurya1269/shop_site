@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Checkout — ShopLocal{% endblock %}
+{% block title %}Checkout — ShopSite{% endblock %}
 
 {% block content %}
+
+<!-- Razorpay checkout script — only loaded when Razorpay is enabled -->
+{% if payment and payment.razorpay_enabled %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endif %}
 
 <div class="container" style="padding:48px 24px;">
 
@@ -11,7 +16,11 @@
     </div>
 
     {% if items %}
-    <form method="POST" action="/payment">
+    {# For non-Razorpay methods this form POSTs normally to /payment/initiate.
+       For Razorpay, JS intercepts the submit event. #}
+    <form method="POST" action="/payment/initiate" id="checkout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <div class="cart-grid">
 
             <!-- Delivery Form -->
@@ -43,9 +52,9 @@
 
                 <div class="payment-options">
 
-                    {% if payment.razorpay_enabled %}
+                    {% if payment and payment.razorpay_enabled %}
                     <label class="payment-card">
-                        <input type="radio" name="payment_method" value="Razorpay" required>
+                        <input type="radio" name="payment_method" value="Razorpay" id="pm-razorpay" required>
                         <div>
                             <h4>💳 Razorpay</h4>
                             <p>Pay securely using cards, UPI or net banking.</p>
@@ -53,65 +62,37 @@
                     </label>
                     {% endif %}
 
-                    {% if payment.upi_enabled %}
+                    {% if payment and payment.upi_enabled %}
                     <label class="payment-card">
-
-                        <input type="radio" name="payment_method" value="UPI" required>
-
+                        <input type="radio" name="payment_method" value="UPI" id="pm-upi" required>
                         <div>
-
                             <h4>📱 UPI</h4>
-
                             <p>Pay using any UPI application.</p>
-
                             <div class="payment-details">
-
-                                <strong id="upi-id">
-                                    {{ payment.upi_id }}
-                                </strong>
-
-                                <button type="button" class="copy-btn" onclick="copyUPI()">
-                                    Copy
-                                </button>
-
+                                <strong id="upi-id">{{ payment.upi_id }}</strong>
+                                <button type="button" class="copy-btn" onclick="copyUPI()">Copy</button>
                             </div>
-
                         </div>
                     </label>
-                    <script>
-                        function copyUPI() {
-                            navigator.clipboard.writeText(document.getElementById("upi-id").innerText.trim());
-                            showToast("UPI ID copied!");
-                        }
-                    </script>
                     {% endif %}
 
-
-                    {% if payment.qr_enabled %}
+                    {% if payment and payment.qr_enabled %}
                     <label class="payment-card">
-
-                        <input type="radio" name="payment_method" value="QR" required>
-
+                        <input type="radio" name="payment_method" value="QR" id="pm-qr" required>
                         <div>
-
                             <h4>📷 QR Code</h4>
-
                             <p>Scan using any UPI App.</p>
-
                             <div class="payment-details">
-
                                 <img src="{{ payment.qr_image_url }}" alt="QR Code"
                                     style="width:220px;border-radius:18px;margin-top:10px;">
-
                             </div>
-
                         </div>
-
                     </label>
                     {% endif %}
-                    {% if payment.phone_enabled %}
+
+                    {% if payment and payment.phone_enabled %}
                     <label class="payment-card">
-                        <input type="radio" name="payment_method" value="Phone" required>
+                        <input type="radio" name="payment_method" value="Phone" id="pm-phone" required>
                         <div>
                             <h4>📞 Phone Number</h4>
                             <p>Pay using any UPI application to this number.</p>
@@ -121,29 +102,23 @@
                             </div>
                         </div>
                     </label>
-                    <script>
-                        function copyPhone() {
-                            navigator.clipboard.writeText(document.getElementById("phone-number").innerText);
-                            showToast("Phone copied!");
-                        }
-                    </script>
                     {% endif %}
 
-                    {% if payment.cod_enabled %}
+                    {% if payment and payment.cod_enabled %}
                     <label class="payment-card">
-                        <input type="radio" name="payment_method" value="COD" required>
+                        <input type="radio" name="payment_method" value="COD" id="pm-cod" required>
                         <div>
-                            <h4>Cash on Delivery</h4>
+                            <h4>🏠 Cash on Delivery</h4>
                             <p>You will pay the delivery person in cash.</p>
                         </div>
                     </label>
                     {% endif %}
 
-                    {% if payment.pickup_enabled %}
+                    {% if payment and payment.pickup_enabled %}
                     <label class="payment-card">
-                        <input type="radio" name="payment_method" value="Pickup" required>
+                        <input type="radio" name="payment_method" value="Pickup" id="pm-pickup" required>
                         <div>
-                            <h4>Store Pickup</h4>
+                            <h4>🏪 Store Pickup</h4>
                             <p>Collect and pay at the shop.</p>
                         </div>
                     </label>
@@ -176,6 +151,12 @@
                 <button type="submit" class="btn btn-primary btn-block"
                     style="margin-top:32px;padding:16px;font-size:16px;" id="place-order-btn" disabled>Place
                     Order</button>
+
+                <!-- Loading spinner — shown while Razorpay order is being created -->
+                <div id="razorpay-spinner" style="display:none;text-align:center;margin-top:16px;color:var(--color-text-secondary);font-size:14px;">
+                    ⏳ Opening payment window…
+                </div>
+
                 <a href="/cart"
                     style="display:block;text-align:center;margin-top:16px;font-size:14px;color:var(--color-text-secondary);text-decoration:underline;">Return
                     to Cart</a>
@@ -200,13 +181,126 @@
 </div>
 
 <script>
+    // ── Enable submit button when a payment method is selected ─────────────
     const radios = document.querySelectorAll('input[name="payment_method"]');
     const btn = document.getElementById("place-order-btn");
+    const form = document.getElementById("checkout-form");
+    const spinner = document.getElementById("razorpay-spinner");
+
     radios.forEach(radio => {
         radio.addEventListener("change", () => {
             btn.disabled = false;
+            if (radio.value === "Razorpay") {
+                btn.textContent = "Pay with Razorpay →";
+            } else {
+                btn.textContent = "Place Order";
+            }
         });
     });
+
+    // ── Razorpay JS intercept ───────────────────────────────────────────────
+    {% if payment and payment.razorpay_enabled %}
+    form.addEventListener("submit", function (e) {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        if (!selected || selected.value !== "Razorpay") return; // let form POST normally
+
+        e.preventDefault();
+
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        const formData = new FormData(form);
+
+        btn.disabled = true;
+        spinner.style.display = "block";
+        btn.textContent = "Processing…";
+
+        // Step 1: Create Razorpay order on the server
+        fetch("/payment/create-order", {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+            body: formData,
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                showToast(data.error, "error");
+                btn.disabled = false;
+                btn.textContent = "Pay with Razorpay →";
+                spinner.style.display = "none";
+                return;
+            }
+
+            // Step 2: Open Razorpay checkout popup
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency,
+                order_id: data.razorpay_order_id,
+                name: "ShopSite",
+                description: "Order Payment",
+                theme: { color: "#6366f1" },
+                prefill: {
+                    name: formData.get("customer_name") || "",
+                    contact: formData.get("phone") || "",
+                },
+                handler: function (response) {
+                    // Step 3: Verify signature on the server
+                    const verifyData = new FormData();
+                    verifyData.append("razorpay_payment_id", response.razorpay_payment_id);
+                    verifyData.append("razorpay_order_id", response.razorpay_order_id);
+                    verifyData.append("razorpay_signature", response.razorpay_signature);
+                    verifyData.append("csrf_token", csrfToken);
+
+                    fetch("/payment/verify", {
+                        method: "POST",
+                        body: verifyData,
+                    })
+                    .then(r => r.json())
+                    .then(vdata => {
+                        if (vdata.success) {
+                            window.location.href = vdata.redirect;
+                        } else {
+                            window.location.href = "/payment/failed?reason=" +
+                                encodeURIComponent(vdata.error || "Verification failed");
+                        }
+                    })
+                    .catch(() => {
+                        window.location.href = "/payment/failed?reason=Network+error+during+verification";
+                    });
+                },
+                modal: {
+                    ondismiss: function () {
+                        showToast("Payment cancelled.", "error");
+                        btn.disabled = false;
+                        btn.textContent = "Pay with Razorpay →";
+                        spinner.style.display = "none";
+                    },
+                },
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on("payment.failed", function () {
+                window.location.href = "/payment/failed?reason=Payment+failed";
+            });
+            spinner.style.display = "none";
+            rzp.open();
+        })
+        .catch(() => {
+            showToast("Could not connect. Please try again.", "error");
+            btn.disabled = false;
+            btn.textContent = "Pay with Razorpay →";
+            spinner.style.display = "none";
+        });
+    });
+    {% endif %}
+
+    function copyUPI() {
+        navigator.clipboard.writeText(document.getElementById("upi-id").innerText.trim());
+        showToast("UPI ID copied!");
+    }
+    function copyPhone() {
+        navigator.clipboard.writeText(document.getElementById("phone-number").innerText.trim());
+        showToast("Phone copied!");
+    }
 </script>
 
 {% endblock %}

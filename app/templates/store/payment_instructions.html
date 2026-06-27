@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Payment — ShopSite{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width:760px;padding:48px 24px;">
+
+    <div class="section-header" style="margin-bottom:32px;">
+        <h1 class="section-title">
+            {% if payment_method == "UPI" %}📱 Pay via UPI
+            {% elif payment_method == "QR" %}📷 Scan QR Code
+            {% elif payment_method == "Phone" %}📞 Pay via Phone Number
+            {% else %}Complete Payment
+            {% endif %}
+        </h1>
+        <a href="/cart" class="section-link">← Back to Cart</a>
+    </div>
+
+    <div class="cart-grid">
+
+        <!-- Payment instructions -->
+        <div class="card" style="padding:32px;">
+
+            <h3 style="margin-bottom:20px;">Payment Instructions</h3>
+
+            {% if payment_method == "UPI" and payment_info and payment_info.upi_id %}
+            <p style="color:var(--color-text-secondary);margin-bottom:20px;">
+                Open any UPI app (PhonePe, GPay, Paytm, etc.) and send the exact amount to:
+            </p>
+            <div style="background:var(--color-bg-section);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+                <div style="font-size:12px;color:var(--color-text-secondary);text-transform:uppercase;font-weight:600;letter-spacing:.5px;margin-bottom:8px;">UPI ID</div>
+                <div style="font-size:22px;font-weight:700;letter-spacing:.5px;" id="upi-id-display">{{ payment_info.upi_id }}</div>
+                <button type="button" onclick="copyText('upi-id-display')"
+                    class="copy-btn" style="margin-top:12px;">📋 Copy</button>
+            </div>
+
+            {% elif payment_method == "QR" and payment_info and payment_info.qr_image_url %}
+            <p style="color:var(--color-text-secondary);margin-bottom:20px;">
+                Scan the QR code below using any UPI app and pay the exact amount shown.
+            </p>
+            <div style="text-align:center;margin-bottom:24px;">
+                <img src="{{ payment_info.qr_image_url }}" alt="Payment QR Code"
+                    style="width:240px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.12);">
+            </div>
+
+            {% elif payment_method == "Phone" and payment_info and payment_info.phone_number %}
+            <p style="color:var(--color-text-secondary);margin-bottom:20px;">
+                Send the exact amount to this number via any UPI app (PhonePe, GPay, etc.):
+            </p>
+            <div style="background:var(--color-bg-section);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+                <div style="font-size:12px;color:var(--color-text-secondary);text-transform:uppercase;font-weight:600;letter-spacing:.5px;margin-bottom:8px;">Phone / UPI Number</div>
+                <div style="font-size:22px;font-weight:700;letter-spacing:2px;" id="phone-display">{{ payment_info.phone_number }}</div>
+                <button type="button" onclick="copyText('phone-display')"
+                    class="copy-btn" style="margin-top:12px;">📋 Copy</button>
+            </div>
+            {% else %}
+            <p style="color:var(--color-text-secondary);">
+                Please transfer the amount manually and click "I Have Paid" below.
+            </p>
+            {% endif %}
+
+            <!-- Amount to pay -->
+            <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;padding:20px;text-align:center;color:#fff;margin-bottom:24px;">
+                <div style="font-size:13px;opacity:.85;margin-bottom:4px;">Amount to Pay</div>
+                <div style="font-size:32px;font-weight:800;">&#8377;{{ "%.2f"|format(total|float) }}</div>
+            </div>
+
+            <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:24px;line-height:1.6;">
+                ⚠️ After paying, click <strong>"I Have Paid"</strong> to confirm your order.
+                The seller will verify your payment and confirm the order.
+            </p>
+
+            <!-- I Have Paid -->
+            <form method="POST" action="/payment/confirm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary btn-block"
+                    style="padding:16px;font-size:16px;font-weight:700;">
+                    ✅ I Have Paid — Confirm Order
+                </button>
+            </form>
+
+        </div>
+
+        <!-- Order summary sidebar -->
+        <div class="cart-summary">
+            <h3 style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--color-border);">
+                Your Order
+            </h3>
+
+            <div style="margin-bottom:16px;">
+                {% for item in items %}
+                <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px;">
+                    <span style="color:var(--color-text-secondary);flex:1;padding-right:12px;">
+                        {{ item.name }} (×{{ item.quantity }})
+                    </span>
+                    <span style="font-weight:600;">&#8377;{{ "%.2f"|format(item.total|float) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="summary-total">
+                <span>Total</span>
+                <span>&#8377;{{ "%.2f"|format(total|float) }}</span>
+            </div>
+
+            <hr style="margin:20px 0;border:none;border-top:1px solid var(--color-border);">
+
+            <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;">
+                <div style="font-weight:600;color:var(--color-text);margin-bottom:4px;">Deliver to</div>
+                <div>{{ customer_name }}</div>
+                <div>{{ phone }}</div>
+                <div style="margin-top:4px;">{{ address }}</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function copyText(elementId) {
+    const text = document.getElementById(elementId).innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Copied to clipboard!");
+    }).catch(() => {
+        showToast("Could not copy. Please copy manually.", "error");
+    });
+}
+</script>
+
+{% endblock %}

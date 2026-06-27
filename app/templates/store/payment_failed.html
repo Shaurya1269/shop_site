@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Failed — ShopSite{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width:560px;padding:80px 24px;text-align:center;">
+
+    <!-- Failure icon -->
+    <div style="
+        width:96px;height:96px;border-radius:50%;
+        background:linear-gradient(135deg,#ef4444,#dc2626);
+        display:flex;align-items:center;justify-content:center;
+        margin:0 auto 32px;
+        box-shadow:0 8px 32px rgba(239,68,68,0.35);
+        animation:shake .5s ease both;
+    ">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+    </div>
+
+    <h1 style="font-size:28px;font-weight:800;margin-bottom:8px;color:#dc2626;">
+        Payment Failed
+    </h1>
+
+    <p style="color:var(--color-text-secondary);font-size:16px;margin-bottom:{% if reason %}16px{% else %}32px{% endif %};">
+        We couldn't process your payment. No money has been deducted from your account.
+    </p>
+
+    {% if reason %}
+    <div class="card" style="margin-bottom:32px;padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;text-align:left;">
+        <div style="font-size:12px;color:#991b1b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Reason</div>
+        <div style="font-size:14px;color:#7f1d1d;">{{ reason }}</div>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="/checkout-page" class="btn btn-primary" style="padding:14px 32px;font-size:15px;">
+            🔄 Retry Payment
+        </a>
+        <a href="/cart" class="btn btn-outline" style="padding:14px 32px;font-size:15px;">
+            ← Back to Cart
+        </a>
+    </div>
+
+    <p style="margin-top:32px;font-size:13px;color:var(--color-text-secondary);">
+        Need help? Contact the shop or try a different payment method.
+    </p>
+
+</div>
+
+<style>
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+}
+</style>
+
+{% endblock %}

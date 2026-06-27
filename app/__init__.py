@@ -36,9 +36,8 @@ def create_app():
     env_debug = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1", "yes")
     app.config["SESSION_COOKIE_SECURE"] = not env_debug
 
-    # CSRF Protection
-    from flask_wtf.csrf import CSRFProtect
-    csrf = CSRFProtect()
+    # CSRF Protection — shared instance from app.extensions
+    from app.extensions import csrf
     csrf.init_app(app)
 
     # Enable structured logging
@@ -69,10 +68,12 @@ def create_app():
     from app.routes.auth_routes import auth_bp
     from app.routes.order_routes import order_bp
     from app.routes.product_routes import product_bp
+    from app.routes.payment_routes import payment_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(shop_bp)
     app.register_blueprint(order_bp)
     app.register_blueprint(product_bp)
+    app.register_blueprint(payment_bp)
 
     return app
 
@@ -196,6 +197,30 @@ end $$;
     """)
 
 
+    # ── Migration 4: Razorpay tracking columns + payment_time ───────────────
+    cur.execute("""
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'orders' AND column_name = 'razorpay_order_id'
+        ) THEN
+            ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT;
+        END IF;
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'orders' AND column_name = 'razorpay_payment_id'
+        ) THEN
+            ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT;
+        END IF;
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'orders' AND column_name = 'payment_time'
+        ) THEN
+            ALTER TABLE orders ADD COLUMN payment_time TIMESTAMP;
+        END IF;
+    END $$;
+    """)
 
     conn.commit()
     cur.close()

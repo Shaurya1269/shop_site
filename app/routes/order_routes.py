@@ -74,3 +74,42 @@ def update_order_status(order_id, status):
         cur.execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
 
     return redirect("/orders")
+
+
+@order_bp.route("/my-orders/<int:order_id>")
+@login_required
+def my_order_detail(order_id):
+    """Customer-facing order detail page — user can only view their own orders."""
+    user_id = session["user_id"]
+    try:
+        with get_db_cursor() as (conn, cur):
+            cur.execute("""
+                SELECT orders.*, shops.shop_name
+                FROM orders
+                JOIN shops ON orders.shop_id = shops.id
+                WHERE orders.id = %s AND orders.user_id = %s
+            """, (order_id, user_id))
+            order = cur.fetchone()
+
+            if not order:
+                return "Order not found", 404
+
+            cur.execute("""
+                SELECT order_items.quantity, order_items.price,
+                       products.name AS product_name, products.image_url
+                FROM order_items
+                JOIN products ON order_items.product_id = products.id
+                WHERE order_items.order_id = %s
+            """, (order_id,))
+            items = cur.fetchall()
+
+        total = sum(float(i["price"]) * i["quantity"] for i in items)
+        return render_template(
+            "store/my_order_detail.html",
+            order=order,
+            items=items,
+            total=total,
+        )
+    except Exception:
+        logger.exception(f"[my_order_detail] error for order_id={order_id}")
+        return "Something went wrong loading this order.", 500
