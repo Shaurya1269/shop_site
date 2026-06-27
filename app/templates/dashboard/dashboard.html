@@ -333,8 +333,8 @@
                         </svg>
                     </div>
                     <div class="dash-ui-order-details">
-                        <div class="dash-ui-order-id">Order #ORD{{ order.id }}</div>
-                        <div class="dash-ui-order-date">Today</div> <!-- Replace with actual date if available -->
+                        <div class="dash-ui-order-id">Order #{{ order.id }}</div>
+                        <div class="dash-ui-order-date">{{ order.created_at.strftime('%d %b') if order.created_at else 'Today' }}</div>
                     </div>
                     <div class="dash-ui-order-customer">{{ order.customer_name or 'Customer' }}</div>
                     <div class="dash-ui-order-amount">&#8377;{{ "%.2f"|format(order.total|float) }}</div>
