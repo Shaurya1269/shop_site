@@ -18,20 +18,17 @@ shop_bp = Blueprint('shop', __name__)
 @shop_bp.route("/")
 def home():
     try:
-        conn = get_db()
-        cur = get_cursor(conn)
-        cur.execute("SELECT shop_name, slug ,description, logo_url,banner_url FROM shops")
-        shops = cur.fetchall()
-       
-        cur.execute("""
-        select products.id,products.name,products.price,products.image_url, shops.shop_name,shops.slug 
-        from products join shops on products.shop_id=shops.id
-        order by products.id desc limit 8
-        """)
-        featured_products=cur.fetchall()
+        with get_db_cursor() as (conn, cur):
+            cur.execute("SELECT shop_name, slug ,description, logo_url,banner_url FROM shops")
+            shops = cur.fetchall()
+           
+            cur.execute("""
+            select products.id,products.name,products.price,products.image_url, shops.shop_name,shops.slug 
+            from products join shops on products.shop_id=shops.id
+            order by products.id desc limit 8
+            """)
+            featured_products=cur.fetchall()
 
-        cur.close()
-        conn.close()
         return render_template("index.html", shops=shops,featured_products=featured_products)
 
     except Exception as e:
@@ -50,78 +47,73 @@ def search():
     sort = request.args.get("sort", "newest")
     
     try:
-        conn = get_db()
-        cur = get_cursor(conn)
+        with get_db_cursor() as (conn, cur):
+            # Fetch available categories for sidebar
+            cur.execute("SELECT DISTINCT category FROM shops WHERE category IS NOT NULL AND category != ''")
+            categories = [row['category'] for row in cur.fetchall()]
 
-        # Fetch available categories for sidebar
-        cur.execute("SELECT DISTINCT category FROM shops WHERE category IS NOT NULL AND category != ''")
-        categories = [row['category'] for row in cur.fetchall()]
+            shops = []
+            products = []
 
-        shops = []
-        products = []
+            # Shops search (only if there's a text query, no filters apply to shops)
+            if query and not any([category, price, rating, availability]):
+                cur.execute("""
+                    SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
+                """, (f"%{query}%",))
+                shops = cur.fetchall()
 
-        # Shops search (only if there's a text query, no filters apply to shops)
-        if query and not any([category, price, rating, availability]):
-            cur.execute("""
-                SELECT shop_name, slug FROM shops WHERE shop_name ILIKE %s
-            """, (f"%{query}%",))
-            shops = cur.fetchall()
-
-        # Products search
-        sql = """
-            SELECT products.id, products.name,
-                   products.price,
-                   products.image_url,
-                   shops.shop_name,
-                   shops.slug as shop_slug,
-                   COALESCE(AVG(reviews.rating), 0) as avg_rating
-            FROM products
-            JOIN shops ON products.shop_id = shops.id
-            LEFT JOIN reviews ON products.id = reviews.product_id
-            WHERE 1=1
-        """
-        params = []
-        
-        if query:
-            sql += " AND products.name ILIKE %s"
-            params.append(f"%{query}%")
+            # Products search
+            sql = """
+                SELECT products.id, products.name,
+                       products.price,
+                       products.image_url,
+                       shops.shop_name,
+                       shops.slug as shop_slug,
+                       COALESCE(AVG(reviews.rating), 0) as avg_rating
+                FROM products
+                JOIN shops ON products.shop_id = shops.id
+                LEFT JOIN reviews ON products.id = reviews.product_id
+                WHERE 1=1
+            """
+            params = []
             
-        if category:
-            sql += " AND shops.category = %s"
-            params.append(category)
-            
-        if price:
-            if price == "0-500":
-                sql += " AND products.price <= 500"
-            elif price == "500-1000":
-                sql += " AND products.price > 500 AND products.price <= 1000"
-            elif price == "1000+":
-                sql += " AND products.price > 1000"
+            if query:
+                sql += " AND products.name ILIKE %s"
+                params.append(f"%{query}%")
                 
-        if availability == "in_stock":
-            sql += " AND products.stock > 0"
-            
-        sql += " GROUP BY products.id, shops.shop_name, shops.slug"
-        
-        if rating:
-            try:
-                min_rating = float(rating)
-                sql += f" HAVING COALESCE(AVG(reviews.rating), 0) >= {min_rating}"
-            except ValueError:
-                pass
+            if category:
+                sql += " AND shops.category = %s"
+                params.append(category)
                 
-        if sort == "price_asc":
-            sql += " ORDER BY products.price ASC"
-        elif sort == "price_desc":
-            sql += " ORDER BY products.price DESC"
-        else:
-            sql += " ORDER BY products.created_at DESC"
+            if price:
+                if price == "0-500":
+                    sql += " AND products.price <= 500"
+                elif price == "500-1000":
+                    sql += " AND products.price > 500 AND products.price <= 1000"
+                elif price == "1000+":
+                    sql += " AND products.price > 1000"
+                    
+            if availability == "in_stock":
+                sql += " AND products.stock > 0"
+                
+            sql += " GROUP BY products.id, shops.shop_name, shops.slug"
             
-        cur.execute(sql, tuple(params))
-        products = cur.fetchall()
-
-        cur.close()
-        conn.close()
+            if rating:
+                try:
+                    min_rating = float(rating)
+                    sql += f" HAVING COALESCE(AVG(reviews.rating), 0) >= {min_rating}"
+                except ValueError:
+                    pass
+                    
+            if sort == "price_asc":
+                sql += " ORDER BY products.price ASC"
+            elif sort == "price_desc":
+                sql += " ORDER BY products.price DESC"
+            else:
+                sql += " ORDER BY products.created_at DESC"
+                
+            cur.execute(sql, tuple(params))
+            products = cur.fetchall()
     except Exception as e:
         logger.error(f"[search] DB error: {e}")
         categories = []
@@ -146,20 +138,14 @@ def search():
 def health():
     """Diagnostic route to test database connection."""
     try:
-        conn = get_db()
-        cur = get_cursor(conn)
-        cur.execute("SELECT 1")
-        cur.close()
-
-        cur = get_cursor(conn)
-        cur.execute("""
-            SELECT table_name FROM information_schema.tables
-            WHERE table_schema = 'public'
-            ORDER BY table_name
-        """)
-        tables = [row['table_name'] for row in cur.fetchall()]
-        cur.close()
-        conn.close()
+        with get_db_cursor() as (conn, cur):
+            cur.execute("SELECT 1")
+            cur.execute("""
+                SELECT table_name FROM information_schema.tables
+                WHERE table_schema = 'public'
+                ORDER BY table_name
+            """)
+            tables = [row['table_name'] for row in cur.fetchall()]
 
         return {
             "status": "ok",
@@ -188,35 +174,30 @@ def register_page():
 @shop_bp.route('/dashboard')
 @login_required
 def dashboard():
-    conn = get_db()
-    cur = get_cursor(conn)
-
-    cur.execute("SELECT * FROM shops WHERE user_id = %s", (session['user_id'],))
-    shop = cur.fetchone()
-
     products = []
     orders = []
-    if shop:
-        cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
-        products = cur.fetchall()
+    with get_db_cursor() as (conn, cur):
+        cur.execute("SELECT * FROM shops WHERE user_id = %s", (session['user_id'],))
+        shop = cur.fetchone()
 
-        # Fetch recent orders for this shop with computed totals
-        cur.execute("""
-            SELECT orders.id, orders.user_id, orders.customer_name, orders.phone,
-                   orders.address, orders.status, orders.created_at,
-                   orders.payment_method, orders.payment_status,
-                   COALESCE(SUM(order_items.quantity * order_items.price), 0) AS total
-            FROM orders
-            LEFT JOIN order_items ON order_items.order_id = orders.id
-            WHERE orders.shop_id = %s
-            GROUP BY orders.id
-            ORDER BY orders.created_at DESC
-            LIMIT 10
-        """, (shop['id'],))
-        orders = cur.fetchall()
+        if shop:
+            cur.execute("SELECT * FROM products WHERE shop_id = %s", (shop['id'],))
+            products = cur.fetchall()
 
-    cur.close()
-    conn.close()
+            # Fetch recent orders for this shop with computed totals
+            cur.execute("""
+                SELECT orders.id, orders.user_id, orders.customer_name, orders.phone,
+                       orders.address, orders.status, orders.created_at,
+                       orders.payment_method, orders.payment_status,
+                       COALESCE(SUM(order_items.quantity * order_items.price), 0) AS total
+                FROM orders
+                LEFT JOIN order_items ON order_items.order_id = orders.id
+                WHERE orders.shop_id = %s
+                GROUP BY orders.id
+                ORDER BY orders.created_at DESC
+                LIMIT 10
+            """, (shop['id'],))
+            orders = cur.fetchall()
 
     return render_template('dashboard/dashboard.html', shop=shop, products=products, orders=orders)
 
@@ -293,25 +274,19 @@ def create_shop_page():
 @shop_bp.route("/shop/<slug>")
 def view_store(slug):
     """Public store page — anyone can view a shop by its slug."""
-    conn = get_db()
-    cur = get_cursor(conn)
+    with get_db_cursor() as (conn, cur):
+        cur.execute("SELECT id, shop_name, slug , description, logo_url, banner_url FROM shops WHERE slug = %s", (slug,))
+        shop = cur.fetchone()
 
-    cur.execute("SELECT id, shop_name, slug , description, logo_url, banner_url FROM shops WHERE slug = %s", (slug,))
-    shop = cur.fetchone()
+        if not shop:
+            return "Shop not found", 404
 
-    if not shop:
-        cur.close()
-        conn.close()
-        return "Shop not found", 404
+        cur.execute(
+            "SELECT id, name, price, description, stock, image_url FROM products WHERE shop_id = %s",
+            (shop['id'],)
+        )
+        products = cur.fetchall()
 
-    cur.execute(
-        "SELECT id, name, price, description, stock, image_url FROM products WHERE shop_id = %s",
-        (shop['id'],)
-    )
-    products = cur.fetchall()
-
-    cur.close()
-    conn.close()
     return render_template("store/store.html", shop=shop, products=products)
 
 
@@ -594,22 +569,17 @@ def view_cart():
     if "user_id" not in session:
         return redirect("/login")
 
-    conn = get_db()
-    cur = get_cursor(conn)
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+            SELECT cart.id as cart_id, products.name, products.price, cart.quantity,
+                   (products.price * cart.quantity) as total
+            FROM cart
+            JOIN products ON cart.product_id = products.id
+            WHERE cart.user_id = %s
+        """, (session["user_id"],))
 
-    cur.execute("""
-        SELECT cart.id as cart_id, products.name, products.price, cart.quantity,
-               (products.price * cart.quantity) as total
-        FROM cart
-        JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
-    """, (session["user_id"],))
-
-    items = cur.fetchall()
-    total = sum(float(item['total']) for item in items) if items else 0
-
-    cur.close()
-    conn.close()
+        items = cur.fetchall()
+        total = sum(float(item['total']) for item in items) if items else 0
 
     return render_template("dashboard/cart.html", items=items, total=total)
 
@@ -617,43 +587,36 @@ def view_cart():
 @shop_bp.route("/checkout-page")
 @login_required
 def checkout_page():
-    conn = get_db()
-    cur = get_cursor(conn)
+    with get_db_cursor() as (conn, cur):
+        cur.execute("""
+            SELECT products.name, products.price, cart.quantity,
+                   (products.price * cart.quantity) as total
+            FROM cart
+            JOIN products ON cart.product_id = products.id
+            WHERE cart.user_id = %s
+        """, (session["user_id"],))
 
-    cur.execute("""
-        SELECT products.name, products.price, cart.quantity,
-               (products.price * cart.quantity) as total
-        FROM cart
-        JOIN products ON cart.product_id = products.id
-        WHERE cart.user_id = %s
-    """, (session["user_id"],))
+        items = cur.fetchall()
 
-    items = cur.fetchall()
+        if not items:
+            return redirect("/cart")
 
-    if not items:
-        cur.close()
-        conn.close()
-        return redirect("/cart")
+        cur.execute("""
+        select distinct products.shop_id from cart join products
+        on cart.product_id=products.id
+        where cart.user_id=%s
+        """,(session["user_id"],))
+        shop_row = cur.fetchone()
+        shop_id = shop_row["shop_id"] if shop_row else None
 
-    cur.execute("""
-    select distinct products.shop_id from cart join products
-    on cart.product_id=products.id
-    where cart.user_id=%s
-    """,(session["user_id"],))
-    shop_row = cur.fetchone()
-    shop_id = shop_row["shop_id"] if shop_row else None
-
-    payment = None
-    if shop_id is not None:
-        payment=get_payment_methods(shop_id)
-        if not payment:
-            create_payment_method(shop_id)
+        payment = None
+        if shop_id is not None:
             payment=get_payment_methods(shop_id)
+            if not payment:
+                create_payment_method(shop_id)
+                payment=get_payment_methods(shop_id)
 
-    total = sum(float(item['total']) for item in items)
-
-    cur.close()
-    conn.close()
+        total = sum(float(item['total']) for item in items)
 
     return render_template("store/checkout.html", items=items, total=total,payment=payment)
 
@@ -664,35 +627,30 @@ def checkout_page():
 @login_required
 def orders():
     """Shop owner view — shows orders placed at MY shop."""
-    conn = get_db()
-    cur  = get_cursor(conn)
-
-    cur.execute("""
-        SELECT orders.*, shops.shop_name
-        FROM orders
-        JOIN shops ON orders.shop_id = shops.id
-        WHERE shops.user_id = %s
-        ORDER BY orders.created_at DESC
-    """, (session["user_id"],))
-
-    orders_data = cur.fetchall()
-
-    orders_list = []
-    for order in orders_data:
+    with get_db_cursor() as (conn, cur):
         cur.execute("""
-            SELECT order_items.*, products.name as product_name
-            FROM order_items
-            JOIN products ON order_items.product_id = products.id
-            WHERE order_items.order_id = %s
-        """, (order['id'],))
-        items = cur.fetchall()
-        order_dict = dict(order)
-        order_dict['items'] = [dict(i) for i in items]
-        order_dict['total'] = sum(float(i['price']) * i['quantity'] for i in items)
-        orders_list.append(order_dict)
+            SELECT orders.*, shops.shop_name
+            FROM orders
+            JOIN shops ON orders.shop_id = shops.id
+            WHERE shops.user_id = %s
+            ORDER BY orders.created_at DESC
+        """, (session["user_id"],))
 
-    cur.close()
-    conn.close()
+        orders_data = cur.fetchall()
+
+        orders_list = []
+        for order in orders_data:
+            cur.execute("""
+                SELECT order_items.*, products.name as product_name
+                FROM order_items
+                JOIN products ON order_items.product_id = products.id
+                WHERE order_items.order_id = %s
+            """, (order['id'],))
+            items = cur.fetchall()
+            order_dict = dict(order)
+            order_dict['items'] = [dict(i) for i in items]
+            order_dict['total'] = sum(float(i['price']) * i['quantity'] for i in items)
+            orders_list.append(order_dict)
 
     return render_template("dashboard/orders.html", orders=orders_list, is_shop_owner=True)
 
@@ -700,61 +658,54 @@ def orders():
 @shop_bp.route("/product/<int:product_id>")
 def view_product(product_id):
     """View individual product and its reviews."""
-    conn = get_db()
-    cur = get_cursor(conn)
-
-    cur.execute("""
-        SELECT products.*, shops.shop_name, shops.slug as shop_slug, shops.logo_url, shops.banner_url,
-               COALESCE(AVG(reviews.rating), 0) as avg_rating,
-               COUNT(reviews.id) as review_count
-        FROM products
-        JOIN shops ON products.shop_id = shops.id
-        LEFT JOIN reviews ON products.id = reviews.product_id
-        WHERE products.id = %s
-        GROUP BY products.id, shops.shop_name, shops.slug, shops.logo_url, shops.banner_url
-    """, (product_id,))
-    product = cur.fetchone()
-
-    if not product:
-        cur.close()
-        conn.close()
-        return "Product not found", 404
-
-    # Fetch related products from the same shop
-    cur.execute("""
-        SELECT * FROM products
-        WHERE shop_id = %s AND id != %s
-        ORDER BY created_at DESC
-        LIMIT 4
-    """, (product['shop_id'], product_id))
-    related_products = cur.fetchall()
-
-    cur.execute("""
-        SELECT reviews.*, users.name as user_name 
-        FROM reviews
-        JOIN users ON reviews.user_id = users.id
-        WHERE reviews.product_id = %s
-        ORDER BY reviews.created_at DESC
-    """, (product_id,))
-    reviews = cur.fetchall()
-
-    # Check if user has purchased this product (to allow reviewing)
-    can_review = False
-    if "user_id" in session:
+    with get_db_cursor() as (conn, cur):
         cur.execute("""
-            SELECT 1 FROM order_items
-            JOIN orders ON order_items.order_id = orders.id
-            WHERE orders.user_id = %s AND order_items.product_id = %s
-            LIMIT 1
-        """, (session["user_id"], product_id))
-        if cur.fetchone():
-            # Check if already reviewed
-            cur.execute("SELECT 1 FROM reviews WHERE user_id = %s AND product_id = %s", (session["user_id"], product_id))
-            if not cur.fetchone():
-                can_review = True
+            SELECT products.*, shops.shop_name, shops.slug as shop_slug, shops.logo_url, shops.banner_url,
+                   COALESCE(AVG(reviews.rating), 0) as avg_rating,
+                   COUNT(reviews.id) as review_count
+            FROM products
+            JOIN shops ON products.shop_id = shops.id
+            LEFT JOIN reviews ON products.id = reviews.product_id
+            WHERE products.id = %s
+            GROUP BY products.id, shops.shop_name, shops.slug, shops.logo_url, shops.banner_url
+        """, (product_id,))
+        product = cur.fetchone()
 
-    cur.close()
-    conn.close()
+        if not product:
+            return "Product not found", 404
+
+        # Fetch related products from the same shop
+        cur.execute("""
+            SELECT * FROM products
+            WHERE shop_id = %s AND id != %s
+            ORDER BY created_at DESC
+            LIMIT 4
+        """, (product['shop_id'], product_id))
+        related_products = cur.fetchall()
+
+        cur.execute("""
+            SELECT reviews.*, users.name as user_name 
+            FROM reviews
+            JOIN users ON reviews.user_id = users.id
+            WHERE reviews.product_id = %s
+            ORDER BY reviews.created_at DESC
+        """, (product_id,))
+        reviews = cur.fetchall()
+
+        # Check if user has purchased this product (to allow reviewing)
+        can_review = False
+        if "user_id" in session:
+            cur.execute("""
+                SELECT 1 FROM order_items
+                JOIN orders ON order_items.order_id = orders.id
+                WHERE orders.user_id = %s AND order_items.product_id = %s
+                LIMIT 1
+            """, (session["user_id"], product_id))
+            if cur.fetchone():
+                # Check if already reviewed
+                cur.execute("SELECT 1 FROM reviews WHERE user_id = %s AND product_id = %s", (session["user_id"], product_id))
+                if not cur.fetchone():
+                    can_review = True
 
     return render_template("store/product_details.html", product=product, reviews=reviews, can_review=can_review, related_products=related_products)
 
@@ -780,37 +731,29 @@ def submit_review(product_id):
 
     user_id = session["user_id"]
 
-    conn = get_db()
-    cur = get_cursor(conn)
-
-    # Verify purchase
-    cur.execute("""
-        SELECT 1 FROM order_items
-        JOIN orders ON order_items.order_id = orders.id
-        WHERE orders.user_id = %s AND order_items.product_id = %s
-        LIMIT 1
-    """, (user_id, product_id))
-    
-    if not cur.fetchone():
-        cur.close()
-        conn.close()
-        flash("You can only review products you have purchased.", "danger")
-        return redirect(f"/product/{product_id}")
-
     try:
-        cur.execute("""
-            INSERT INTO reviews (product_id, user_id, rating, comment)
-            VALUES (%s, %s, %s, %s)
-        """, (product_id, user_id, rating, comment))
-        conn.commit()
+        with get_db_cursor() as (conn, cur):
+            # Verify purchase
+            cur.execute("""
+                SELECT 1 FROM order_items
+                JOIN orders ON order_items.order_id = orders.id
+                WHERE orders.user_id = %s AND order_items.product_id = %s
+                LIMIT 1
+            """, (user_id, product_id))
+            
+            if not cur.fetchone():
+                flash("You can only review products you have purchased.", "danger")
+                return redirect(f"/product/{product_id}")
+
+            cur.execute("""
+                INSERT INTO reviews (product_id, user_id, rating, comment)
+                VALUES (%s, %s, %s, %s)
+            """, (product_id, user_id, rating, comment))
         flash("Review submitted successfully!", "success")
     except Exception as e:
         logger.error(f"Failed to submit review: {e}")
-        conn.rollback()
         flash("You have already reviewed this product.", "danger")
 
-    cur.close()
-    conn.close()
     return redirect(f"/product/{product_id}")
 
 @shop_bp.route("/payment-settings", methods=["GET", "POST"])
