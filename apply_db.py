@@ -1,4 +1,4 @@
-from app.utils.db import get_db, get_cursor
+from app.utils.db import get_db, get_cursor, release_db
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS reviews(
 """)
 conn.commit()
 cur.close()
-conn.close()
+release_db(conn)
 print("Applied schema successfully")

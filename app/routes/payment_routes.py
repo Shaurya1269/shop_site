@@ -45,6 +45,8 @@ from services.payment_service import (
     update_order_payment_info,
     verify_razorpay_signature,
     verify_webhook_signature,
+    confirm_order_payment,
+    cancel_order_payment,
 )
 
 logger = logging.getLogger(__name__)
@@ -300,6 +302,19 @@ def razorpay_create_order():
             key_id=key_id,
             key_secret=key_secret,
         )
+        
+        # Create order in our database locally (with Pending payment status)
+        create_order(
+            user_id=user_id,
+            customer_name=customer_name,
+            phone=phone,
+            address=address,
+            payment_method="Razorpay",
+            payment_status="Pending",
+            order_status="Pending",
+            razorpay_order_id=rzp_order["id"],
+        )
+
         return jsonify(
             {
                 "razorpay_order_id": rzp_order["id"],
@@ -365,24 +380,11 @@ def razorpay_verify():
         )
         return jsonify({"success": False, "error": "Payment verification failed."}), 400
 
-    # ── Create marketplace order ONLY after verified ──────────────────────────
-    checkout_data = session.get("checkout_data")
-    if not checkout_data:
-        return jsonify({"success": False, "error": "Session expired. Please try again."}), 400
-
-    user_id = session["user_id"]
-
+    # ── Confirm marketplace order ONLY after verified ──────────────────────────
     try:
-        result = create_order(
-            user_id=user_id,
-            customer_name=checkout_data["customer_name"],
-            phone=checkout_data["phone"],
-            address=checkout_data["address"],
-            payment_method="Razorpay",
-            payment_status="Paid",
-            order_status="Confirmed",
-            razorpay_payment_id=razorpay_payment_id,
+        result = confirm_order_payment(
             razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
         )
         session.pop("checkout_data", None)
 
@@ -398,8 +400,8 @@ def razorpay_verify():
     except ValueError as exc:
         return jsonify({"success": False, "error": str(exc)}), 400
     except Exception:
-        logger.exception("[razorpay_verify] create_order failed after signature verified")
-        return jsonify({"success": False, "error": "Order creation failed. Contact support."}), 500
+        logger.exception("[razorpay_verify] confirm_order_payment failed after signature verified")
+        return jsonify({"success": False, "error": "Order verification failed. Contact support."}), 500
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -444,31 +446,17 @@ def razorpay_webhook():
     if not razorpay_order_id:
         return jsonify({"status": "ignored"}), 200
 
-    # Determine new payment status
-    if event == "payment.captured":
-        new_payment_status = "Paid"
-    elif event == "payment.failed":
-        new_payment_status = "Failed"
-    else:
-        # Unhandled event — acknowledge and ignore
-        return jsonify({"status": "ignored"}), 200
-
-    # Update the order
+    # Determine event and update order status
     try:
-        with _get_cursor() as (conn, cur):
-            cur.execute(
-                """
-                UPDATE orders
-                SET payment_status      = %s,
-                    razorpay_payment_id = %s,
-                    payment_time        = NOW()
-                WHERE razorpay_order_id = %s
-                """,
-                (new_payment_status, razorpay_payment_id, razorpay_order_id),
-            )
+        if event == "payment.captured":
+            confirm_order_payment(razorpay_order_id, razorpay_payment_id)
+        elif event == "payment.failed":
+            cancel_order_payment(razorpay_order_id)
+        else:
+            # Unhandled event — acknowledge and ignore
+            return jsonify({"status": "ignored"}), 200
         logger.info(
-            f"[webhook] event={event}  razorpay_order_id={razorpay_order_id}  "
-            f"new_status={new_payment_status}"
+            f"[webhook] event={event}  razorpay_order_id={razorpay_order_id} processed successfully."
         )
     except Exception:
         logger.exception("[webhook] DB update failed")

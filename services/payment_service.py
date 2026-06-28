@@ -244,3 +244,90 @@ def update_order_payment_info(
         f"[update_order_payment_info] order_id={order_id}  "
         f"razorpay_payment_id={razorpay_payment_id}  payment_status={payment_status}"
     )
+
+
+def confirm_order_payment(razorpay_order_id: str, razorpay_payment_id: str) -> dict:
+    """
+    Confirm the order status and payment status when Razorpay payment is verified successfully.
+    Returns a dict with order_id and total.
+    """
+    with get_db_cursor() as (conn, cur):
+        cur.execute(
+            """
+            UPDATE orders
+            SET payment_status = 'Paid',
+                status = 'Confirmed',
+                razorpay_payment_id = %s,
+                payment_time = NOW()
+            WHERE razorpay_order_id = %s
+            RETURNING id, shop_id
+            """,
+            (razorpay_payment_id, razorpay_order_id),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise ValueError(f"Order not found for Razorpay Order ID: {razorpay_order_id}")
+        
+        order_id = row["id"]
+        
+        # Calculate total
+        cur.execute(
+            """
+            SELECT COALESCE(SUM(quantity * price), 0) AS total
+            FROM order_items
+            WHERE order_id = %s
+            """,
+            (order_id,),
+        )
+        total_row = cur.fetchone()
+        total = float(total_row["total"]) if total_row else 0.0
+
+    return {"order_id": order_id, "total": total}
+
+
+def cancel_order_payment(razorpay_order_id: str) -> None:
+    """
+    Cancel the order and restore product stock when Razorpay payment fails.
+    """
+    with get_db_cursor() as (conn, cur):
+        # Fetch order details
+        cur.execute(
+            "SELECT id, status FROM orders WHERE razorpay_order_id = %s",
+            (razorpay_order_id,)
+        )
+        row = cur.fetchone()
+        if not row:
+            logger.warning(f"[cancel_order_payment] Order not found for Razorpay Order ID: {razorpay_order_id}")
+            return
+        
+        order_id = row["id"]
+        status = row["status"]
+        
+        # If already cancelled, do not restore stock twice
+        if status == "Cancelled":
+            return
+            
+        # Update order status
+        cur.execute(
+            """
+            UPDATE orders
+            SET payment_status = 'Failed',
+                status = 'Cancelled'
+            WHERE id = %s
+            """,
+            (order_id,)
+        )
+        
+        # Fetch order items to restore stock
+        cur.execute(
+            "SELECT product_id, quantity FROM order_items WHERE order_id = %s",
+            (order_id,)
+        )
+        items = cur.fetchall()
+        for item in items:
+            cur.execute(
+                "UPDATE products SET stock = stock + %s WHERE id = %s",
+                (item["quantity"], item["product_id"])
+            )
+        logger.info(f"[cancel_order_payment] Cancelled order {order_id} and restored stock for {len(items)} products.")
+

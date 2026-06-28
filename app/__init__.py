@@ -90,7 +90,7 @@ def _init_db(app):
 
 def _run_schema():
     """Execute schema.sql to create tables and run all migrations."""
-    from app.utils.db import get_db, get_cursor
+    from app.utils.db import get_db, get_cursor, release_db
 
     schema_path = os.path.join(os.path.dirname(
         __file__), '..', 'database', 'schema.sql')
@@ -243,4 +243,4 @@ end $$;
 
     conn.commit()
     cur.close()
-    conn.close()
+    release_db(conn)
