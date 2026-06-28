@@ -172,6 +172,7 @@
                     });
 
                     radio.checked = true;
+                    radio.dispatchEvent(new Event("change", { bubbles: true }));
 
                     card.classList.add("selected");
 
