@@ -310,7 +310,7 @@ def razorpay_create_order():
         )
     except RuntimeError as exc:
         logger.error(f"[razorpay_create_order] config error: {exc}")
-        return jsonify({"error": "Razorpay is not configured. Contact the shop owner."}), 500
+        return jsonify({"error": "Razorpay is not configured for this shop. Please set up your Key ID and Key Secret in Payment Settings."}), 400
     except Exception:
         logger.exception("[razorpay_create_order] Razorpay API error")
         return jsonify({"error": "Could not initiate payment. Please try again."}), 500

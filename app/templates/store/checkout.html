@@ -181,6 +181,7 @@
 </div>
 
 <script>
+(function() {
     // ── Enable submit button when a payment method is selected ─────────────
     const radios = document.querySelectorAll('input[name="payment_method"]');
     const btn = document.getElementById("place-order-btn");
@@ -293,14 +294,15 @@
     });
     {% endif %}
 
-    function copyUPI() {
+    window.copyUPI = function() {
         navigator.clipboard.writeText(document.getElementById("upi-id").innerText.trim());
         showToast("UPI ID copied!");
     }
-    function copyPhone() {
+    window.copyPhone = function() {
         navigator.clipboard.writeText(document.getElementById("phone-number").innerText.trim());
         showToast("Phone copied!");
     }
+})();
 </script>
 
 {% endblock %}
