@@ -23,18 +23,19 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def _razorpay_client() -> razorpay.Client:
+def _razorpay_client(key_id: str = None, key_secret: str = None) -> razorpay.Client:
     """Return an authenticated Razorpay client.
 
-    Raises RuntimeError if the API credentials are missing from the environment.
+    Falls back to environment variables if parameters are not provided.
+    Raises RuntimeError if credentials are missing.
     """
-    key_id = os.environ.get("RAZORPAY_KEY_ID", "")
-    key_secret = os.environ.get("RAZORPAY_KEY_SECRET", "")
-    if not key_id or not key_secret:
+    final_key_id = key_id or os.environ.get("RAZORPAY_KEY_ID", "")
+    final_key_secret = key_secret or os.environ.get("RAZORPAY_KEY_SECRET", "")
+    if not final_key_id or not final_key_secret:
         raise RuntimeError(
-            "RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be set in the environment."
+            "RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be set in the environment or configured for the shop."
         )
-    return razorpay.Client(auth=(key_id, key_secret))
+    return razorpay.Client(auth=(final_key_id, final_key_secret))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -94,7 +95,13 @@ def get_shop_payment_methods(shop_id: int):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def create_razorpay_order(amount_paise: int, currency: str = "INR", receipt: str = None) -> dict:
+def create_razorpay_order(
+    amount_paise: int,
+    currency: str = "INR",
+    receipt: str = None,
+    key_id: str = None,
+    key_secret: str = None,
+) -> dict:
     """
     Create a Razorpay order.
 
@@ -112,7 +119,7 @@ def create_razorpay_order(amount_paise: int, currency: str = "INR", receipt: str
     -------
     dict — the Razorpay order object (contains 'id', 'amount', 'currency', …).
     """
-    client = _razorpay_client()
+    client = _razorpay_client(key_id=key_id, key_secret=key_secret)
     data: dict = {
         "amount": int(amount_paise),
         "currency": currency,
@@ -138,6 +145,8 @@ def verify_razorpay_signature(
     razorpay_order_id: str,
     razorpay_payment_id: str,
     razorpay_signature: str,
+    key_id: str = None,
+    key_secret: str = None,
 ) -> bool:
     """
     Verify the HMAC-SHA256 signature returned by Razorpay after payment.
@@ -145,7 +154,7 @@ def verify_razorpay_signature(
     Returns True on success, False on failure.
     Never raises — exceptions are caught and logged.
     """
-    client = _razorpay_client()
+    client = _razorpay_client(key_id=key_id, key_secret=key_secret)
     try:
         client.utility.verify_payment_signature(
             {

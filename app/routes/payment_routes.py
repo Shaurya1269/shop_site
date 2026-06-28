@@ -278,19 +278,34 @@ def razorpay_create_order():
         "payment_method": "Razorpay",
     }
 
+    shop_id = get_shop_for_cart(user_id)
+    if not shop_id:
+        return jsonify({"error": "Shop not found for the cart items."}), 400
+
+    payment = get_shop_payment_methods(shop_id)
+    key_id = None
+    key_secret = None
+    if payment:
+        key_id = payment.get("razorpay_key_id")
+        key_secret = payment.get("razorpay_key_secret")
+
+    final_key = key_id or os.environ.get("RAZORPAY_KEY_ID", "")
+
     try:
         amount_paise = int(round(total * 100))
         rzp_order = create_razorpay_order(
             amount_paise=amount_paise,
             currency="INR",
             receipt=f"user_{user_id}",
+            key_id=key_id,
+            key_secret=key_secret,
         )
         return jsonify(
             {
                 "razorpay_order_id": rzp_order["id"],
                 "amount": rzp_order["amount"],
                 "currency": rzp_order["currency"],
-                "key": os.environ.get("RAZORPAY_KEY_ID", ""),
+                "key": final_key,
             }
         )
     except RuntimeError as exc:
@@ -327,8 +342,24 @@ def razorpay_verify():
     if not all([razorpay_payment_id, razorpay_order_id, razorpay_signature]):
         return jsonify({"success": False, "error": "Missing payment fields."}), 400
 
+    user_id = session["user_id"]
+    shop_id = get_shop_for_cart(user_id)
+    key_id = None
+    key_secret = None
+    if shop_id:
+        payment = get_shop_payment_methods(shop_id)
+        if payment:
+            key_id = payment.get("razorpay_key_id")
+            key_secret = payment.get("razorpay_key_secret")
+
     # ── Verify signature — NEVER skip this ───────────────────────────────────
-    if not verify_razorpay_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
+    if not verify_razorpay_signature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        key_id=key_id,
+        key_secret=key_secret
+    ):
         logger.warning(
             f"[razorpay_verify] Signature mismatch for order_id={razorpay_order_id}"
         )

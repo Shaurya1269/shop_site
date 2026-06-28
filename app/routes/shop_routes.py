@@ -783,6 +783,13 @@ def payment_settings():
 
         upi_id = request.form.get("upi_id", "").strip()
         phone_number = request.form.get("phone_number", "").strip()
+        razorpay_key_id = request.form.get("razorpay_key_id", "").strip()
+        razorpay_key_secret = request.form.get("razorpay_key_secret", "").strip()
+
+        # If key secret is not provided but already exists in DB, preserve it.
+        # This allows user to leave it blank to keep the existing one.
+        if razorpay_enabled and not razorpay_key_secret and payment:
+            razorpay_key_secret = payment.get("razorpay_key_secret")
 
         if upi_enabled and not validate_upi(upi_id):
             flash("Invalid UPI ID format.", "danger")
@@ -808,7 +815,9 @@ def payment_settings():
             pickup_enabled,
             upi_id,
             phone_number,
-            qr_image_url
+            qr_image_url,
+            razorpay_key_id,
+            razorpay_key_secret
         )
 
         flash("Payment methods updated successfully!", "success")

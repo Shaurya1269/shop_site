@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS payment_methods(
     upi_id text,
     phone_number text,
     qr_image_url text,
+    razorpay_key_id text,
+    razorpay_key_secret text,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );

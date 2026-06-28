@@ -24,7 +24,9 @@ def update_payment_method(shop_id,
         pickup_enabled,
         upi_id,
         phone_number,
-        qr_image_url):
+        qr_image_url,
+        razorpay_key_id=None,
+        razorpay_key_secret=None):
         
         with get_db_cursor() as (conn, cur):
             cur.execute("""
@@ -39,6 +41,8 @@ def update_payment_method(shop_id,
                 upi_id=%s,
                 phone_number=%s,
                 qr_image_url=%s,
+                razorpay_key_id=%s,
+                razorpay_key_secret=%s,
                 updated_at=NOW()
             WHERE shop_id=%s
         """,
@@ -52,6 +56,8 @@ def update_payment_method(shop_id,
             upi_id,
             phone_number,
             qr_image_url,
+            razorpay_key_id,
+            razorpay_key_secret,
             shop_id
         ))
 

@@ -222,6 +222,25 @@ end $$;
     END $$;
     """)
 
+    # ── Migration 5: Shop-specific Razorpay credentials columns ──────────────
+    cur.execute("""
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'payment_methods' AND column_name = 'razorpay_key_id'
+        ) THEN
+            ALTER TABLE payment_methods ADD COLUMN razorpay_key_id TEXT;
+        END IF;
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'payment_methods' AND column_name = 'razorpay_key_secret'
+        ) THEN
+            ALTER TABLE payment_methods ADD COLUMN razorpay_key_secret TEXT;
+        END IF;
+    END $$;
+    """)
+
     conn.commit()
     cur.close()
     conn.close()
